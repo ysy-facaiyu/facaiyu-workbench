@@ -825,6 +825,7 @@ function renderHot(root){
         <button class="hot-tab" data-cat="edu">📚 教育爆款</button>
         <button class="hot-tab" data-cat="lowcost">💰 低成本留学</button>
         <button class="hot-tab" data-cat="teach">🎓 教做视频</button>
+        <button class="hot-tab" data-cat="peer">👁 同行可借鉴</button>
       </div>
 
       <!-- 粘贴链接分析器 -->
@@ -837,6 +838,7 @@ function renderHot(root){
             <option value="edu">📚 教育爆款</option>
             <option value="lowcost">💰 低成本留学</option>
             <option value="teach">🎓 教做视频</option>
+            <option value="peer">👁 同行可借鉴</option>
           </select>
           <input class="input" id="hotAnalyzeTitle" placeholder="视频标题（可选）" style="flex:1">
           <button class="btn btn-primary" onclick="analyzeHotVideo()">🔍 分析</button>
@@ -921,7 +923,7 @@ function delTopic(id){
 }
 
 /* ============ 爆款视频分析库 - 数据与分析逻辑 ============ */
-const HOT_CATS={daily:'🔥 每日爆款',edu:'📚 教育爆款',lowcost:'💰 低成本留学',teach:'🎓 教做视频'};
+const HOT_CATS={daily:'🔥 每日爆款',edu:'📚 教育爆款',lowcost:'💰 低成本留学',teach:'🎓 教做视频',peer:'👁 同行可借鉴'};
 
 // 预埋已拆解的爆款案例（真实可参考的拆解模板）
 const PRESET_HOT_VIDEOS=[
@@ -997,6 +999,67 @@ const PRESET_HOT_VIDEOS=[
     empathy:'成长渴望共鸣：戳中做号者"努力发视频但就是不涨粉"的挫败感，给"有秘密可破解"的希望',
     structure:'3秒结果钩子→15秒常见误区(为什么你不涨粉)→25秒核心方法(选题/钩子/节奏)→10秒执行清单→5秒关注引导',
     reuse:'可复用：用"数字结果+秘密"句式做你自己的内容——"一条朋友圈转化3个客户的秘密""10个月毕业的硕士怎么选"；每条都带具体数字'
+  },
+  /* ===== 同行可借鉴（英美澳中介三段式拆解） ===== */
+  // 文案/话术拆解
+  {
+    cat:'peer',title:'英美中介的"信息差焦虑"文案套路',
+    platform:'小红书',author:'英美中介同行',plays:'',likes:'',fans:'',
+    original:'英美中介常发这类文案："留学中介不会告诉你的5件事""GPA3.0能申什么档？中介不会主动说"。用"中介不告诉你"制造对立感+信息差期待，让观众觉得"要捡漏了"必须看。',
+    logic:'人对"被隐瞒的信息"高度敏感——这是损失厌恶本能。把 positioning 摆成"我站在你这边、对抗行业黑幕"，既建立信任又留人。比直接说"我很专业"有效10倍。',
+    apply:'你白俄业务直接套：发《白俄留学中介不会告诉你的3件事》——①不收中介费的学校有哪些②英语授课项目其实不用学俄语③包录取的真相是面试培训而非暗箱。把你"一手中介"的身份当成"自爆内幕"的信任背书，反差感更强。'
+  },
+  {
+    cat:'peer',title:'案例包装的话术结构',
+    platform:'朋友圈',author:'英美中介同行',plays:'',likes:'',fans:'',
+    original:'英美中介发学员案例从不只发offer截图，而是固定结构：学员背景(低)→申请难点→我们做了什么→录取结果(高)→一句话感悟。三段式叙事让"普通孩子逆袭"的故事感拉满。',
+    logic:'反差叙事 = 低起点 + 高结果。人脑天然偏爱"逆袭故事"，比纯晒offer多了情感投射空间。加"我们做了什么"是为了把功劳归因到自己身上，证明服务价值。',
+    apply:'你白俄案例直接套：背景"中专毕业奶茶店打工"→难点"专升本卷不动+学历自卑"→我们做了什么"14个月专升本+英语授课+面试培训"→结果"明斯克读本科，一年4万"→感悟"学历不是终点是入口"。你的一手渠道身份在"我们做了什么"环节更有说服力——直接对接学校，没有中间商。'
+  },
+  // 引流策略拆解
+  {
+    cat:'peer',title:'英美中介的"问题清单"引流法',
+    platform:'小红书',author:'英美中介同行',plays:'',likes:'',fans:'',
+    original:'英美中介常用引流套路：发一条"留学前必须想清楚的7个问题"图文，每个问题都让人对号入座，结尾"全中的扣1，我帮你做个免费规划"。评论区全是精准客户。',
+    logic:'清单体让人自我筛选——符合条件的自动产生"这说的就是我"的认同，进而主动咨询。比硬广"快来咨询"高明在：用户觉得自己需要你，而不是你在推销。',
+    apply:'你白俄业务直接套：发《低预算留学必须问自己的5个问题》——①一年预算能不能压到5万以内②能不能接受英语授课不学俄语③要不要免语言成绩免绩点④能接受10个月硕士还是14个月专升本⑤愿不愿意去白俄/哈国。全中的扣1，你的一手中介身份+透明费用就是最佳转化点。'
+  },
+  {
+    cat:'peer',title:'英美中介的"成本对比图"引流',
+    platform:'小红书',author:'英美中介同行',plays:'',likes:'',fans:'',
+    original:'英美中介经常做一张图：左边"国内三本4年15万"vs右边"英国硕士1年35万"，配上"哪个更值？"——用视觉化对比制造冲击，评论区自动分两派，互动率爆炸。',
+    logic:'对比图降低了决策门槛——把抽象的"值不值"变成可看见的数字。A vs B 的框架还会激发站队心理，评论互动拉满，算法推流。',
+    apply:'你白俄业务这个套路天然适配：做《国内三本4年15万 vs 白俄硕士10个月4万》对比图，加上"文凭都认证、回国都考编"——你的成本优势比英美更碾压。再把"一手中介无中间商"做成对比图第二个卖点：同行收2万中介费 vs 你一手直对接收多少。'
+  },
+  // 高转化案例拆解
+  {
+    cat:'peer',title:'高转化案例：一条朋友圈带来7个咨询',
+    platform:'朋友圈',author:'英美中介同行',plays:'',likes:'',fans:'',
+    original:'一条高转化朋友圈的固定公式：情绪开头(戳痛点)→真实故事(学员)→服务介入(我们做了什么)→结果展示(录取/好评)→软性号召(有同样困扰的私我)。不发硬广，全程讲故事。',
+    logic:'故事 > 广告。人对故事没有防备心，会自动代入。情绪开头留人，真实故事建信任，服务介入证明价值，软号召收尾不招烦。这就是"软广"高转化的底层结构。',
+    apply:'你白俄业务直接套这条公式：情绪开头"今天有个中专毕业的孩子跟我说不想一辈子打工"→故事"他专升本卷不动"→介入"我帮他申了白俄14个月专升本"→结果"现在明斯克读本科一年4万"→号召"觉得自己卡住的私我"。你的一手身份让"介入"环节更可信——直接对接学校，不是二道贩子。'
+  },
+  {
+    cat:'peer',title:'高转化案例：评论区变私域的钩子设计',
+    platform:'小红书',author:'英美中介同行',plays:'',likes:'',fans:'',
+    original:'英美中介在小红书评论区埋钩子：不直接说"加微信"，而是"评论区扣你的背景，我帮你估个区间"——把评论区变成免费咨询入口，回复后再私信发详细方案，自然加到私域。',
+    logic:'直接要微信触发平台风控+用户防备。"扣背景免费估区间"给了用户一个"占便宜"的理由主动暴露需求，咨询师再私信承接，转化率比硬引流高3-5倍。',
+    apply:'你白俄业务直接套：结尾固定"评论区发你的学历+预算，我帮你看看白俄/哈国哪个学校能申"。你的一手身份让你能给"精准判断能不能申"——这是二道贩子给不了的，正好成为你最强的评论区钩子。'
+  },
+  // 学员故事包装
+  {
+    cat:'peer',title:'英美中介怎么包装"学员故事"最大化信任',
+    platform:'多平台',author:'英美中介同行',plays:'',likes:'',fans:'',
+    original:'英美中介包装学员故事有3个细节：①用化名+真实细节(家乡/专业)增加可信度②放学员本人一段话引用(带语气词)③结尾附学员授权的录取截图或反馈截图。三层证据链。',
+    logic:'纯故事容易被当编的。化名+真实细节=接地气，学员原话引用=有温度，截图=硬证据。三层叠加让"这是真的"无可辩驳，信任度指数级上升。',
+    apply:'你白俄业务直接套：写"小张(化名)，河南某中专毕业"→引用他原话"老师，我不想一辈子在奶茶店"→附白俄罗斯国立大学录取截图+他给你的微信反馈截图。你的一手中介身份让你能拿到更一手的学生素材——接机视频、宿舍实拍、当地老师探望，这些都是二道贩子拿不到的独家信任素材。'
+  },
+  {
+    cat:'peer',title:'学员故事的"前后对比"包装法',
+    platform:'多平台',author:'英美中介同行',plays:'',likes:'',fans:'',
+    original:'英美中介最爱做"留学前 vs 留学后"对比：留学前(迷茫/自卑/打工)vs 留学后(自信/明斯克读研/考编上岸)。一组对比图胜过千言万语，观众一眼看到价值。',
+    logic:'对比 = 价值可视化。人脑对"变化"敏感，对"状态"钝感。直接说"他现在很好"没冲击力，"打工→明斯克硕士"的反差才有戏剧张力。这也是为什么 before/after 永远有效。',
+    apply:'你白俄业务这个套路是天然适配：中专打工(before)→明斯克专升本(after)；考研失败(before)→白俄硕士10个月毕业(after)；预算不够放弃留学(before)→一年4万白俄读研(after)。你的一手身份让你能持续拿到学生的 before/after 素材——从申请到毕业全程跟踪，这是你独家的内容护城河。'
   }
 ];
 
@@ -1028,6 +1091,20 @@ function renderHotVideoList(){
         <span style="font-size:18px;color:var(--text-light)">▾</span>
       </div>
       <div class="hv-body">
+        ${v.cat==='peer' ? `
+        <div class="analyze-dim">
+          <div class="dim-label">🎭 原套路（英美澳中介怎么做的）</div>
+          <div class="dim-text">${esc(v.original)}</div>
+        </div>
+        <div class="analyze-dim">
+          <div class="dim-label">🧠 通用逻辑（为什么有效）</div>
+          <div class="dim-text">${esc(v.logic)}</div>
+        </div>
+        <div class="analyze-dim">
+          <div class="dim-label">🎯 你白俄/哈国业务怎么用</div>
+          <div class="dim-text">${esc(v.apply)}</div>
+        </div>
+        ` : `
         <div class="analyze-dim">
           <div class="dim-label">🎯 开头钩子</div>
           <div class="dim-text">${esc(v.hook)}</div>
@@ -1044,6 +1121,7 @@ function renderHotVideoList(){
           <div class="dim-label">✨ 可复用借鉴点</div>
           <div class="dim-text">${esc(v.reuse)}</div>
         </div>
+        `}
         ${!isPreset?`<div style="margin-top:10px"><button class="btn btn-danger btn-sm" onclick="delHotVideo('${v.id}')">🗑 删除</button></div>`:''}
       </div>
     </div>`;
