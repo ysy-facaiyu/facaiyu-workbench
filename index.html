@@ -445,6 +445,7 @@ tbody tr:hover{background:#F8FAFC}
     <nav class="nav" id="nav">
       <button class="nav-item active" data-page="plan"><span class="icon">📋</span>每日计划</button>
       <button class="nav-item" data-page="inspire"><span class="icon">💡</span>选题每日灵感</button>
+      <button class="nav-item" data-page="hot"><span class="icon">🎬</span>爆款视频分析库</button>
       <button class="nav-item" data-page="review"><span class="icon">📊</span>内容复盘</button>
       <button class="nav-item" data-page="moments"><span class="icon">🌍</span>发朋友圈</button>
       <button class="nav-item" data-page="memo"><span class="icon">📝</span>备忘录</button>
@@ -533,6 +534,7 @@ function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;',
 const PAGES = {
   plan:    {title:'每日计划', sub:'今日待办与周进度', render:renderPlan},
   inspire: {title:'选题每日灵感', sub:'灵感速记 · 爆款选题库', render:renderInspire},
+  hot:     {title:'爆款视频分析库', sub:'拆解爆款 · 借鉴复用', render:renderHot},
   review:  {title:'内容复盘', sub:'作品数据与优化方向', render:renderReview},
   moments: {title:'发朋友圈', sub:'留学中介朋友圈运营', render:renderMoments},
   memo:    {title:'备忘录', sub:'随笔 · 归档 · 清单', render:renderMemo},
@@ -803,8 +805,13 @@ function renderInspire(root){
       <button class="btn btn-accent" onclick="addTopic()">➕ 加入选题库</button>
       <div id="topicList" style="margin-top:18px"></div>
     </div>
+  `;
+  renderInspireList();renderTopicList();
+}
 
-    <!-- 爆款视频分析库 -->
+/* ============ 爆款视频分析库（独立栏目） ============ */
+function renderHot(root){
+  root.innerHTML=`
     <div class="card" style="position:relative">
       <div class="watermark">🎬</div>
       <div class="card-header">
@@ -840,7 +847,7 @@ function renderInspire(root){
       <div id="hotVideoList"></div>
     </div>
   `;
-  renderInspireList();renderTopicList();renderHotVideoList();bindHotTabs();
+  renderHotVideoList();bindHotTabs();
 }
 function renderInspireList(){
   const list=$('#inspireList');if(!list)return;
@@ -911,7 +918,7 @@ function delTopic(id){
   let topics=Store.get('topics',[]);topics=topics.filter(x=>x.id!==id);Store.set('topics',topics);renderTopicList();
 }
 
-/* ============ 2.5 爆款视频分析库 ============ */
+/* ============ 爆款视频分析库 - 数据与分析逻辑 ============ */
 const HOT_CATS={daily:'🔥 每日爆款',edu:'📚 教育爆款',lowcost:'💰 低成本留学'};
 
 // 预埋已拆解的爆款案例（真实可参考的拆解模板）
