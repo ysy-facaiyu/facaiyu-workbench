@@ -459,6 +459,7 @@ tbody tr:hover{background:#F8FAFC}
       <button class="nav-item active" data-page="plan"><span class="icon">📋</span>每日计划</button>
       <button class="nav-item" data-page="inspire"><span class="icon">💡</span>选题每日灵感</button>
       <button class="nav-item" data-page="hot"><span class="icon">🎬</span>爆款视频分析库</button>
+      <button class="nav-item" data-page="launch"><span class="icon">🚀</span>起号计划</button>
       <button class="nav-item" data-page="review"><span class="icon">📊</span>内容复盘</button>
       <button class="nav-item" data-page="moments"><span class="icon">🌍</span>发朋友圈</button>
       <button class="nav-item" data-page="memo"><span class="icon">📝</span>备忘录</button>
@@ -549,6 +550,7 @@ const PAGES = {
   plan:    {title:'每日计划', sub:'今日待办与周进度', render:renderPlan},
   inspire: {title:'选题每日灵感', sub:'灵感速记 · 爆款选题库', render:renderInspire},
   hot:     {title:'爆款视频分析库', sub:'拆解爆款 · 借鉴复用', render:renderHot},
+  launch:  {title:'起号计划', sub:'双号策略 · 内容日历 · 数据追踪', render:renderLaunch},
   review:  {title:'内容复盘', sub:'作品数据与优化方向', render:renderReview},
   moments: {title:'发朋友圈', sub:'留学中介朋友圈运营', render:renderMoments},
   memo:    {title:'备忘录', sub:'随笔 · 归档 · 清单', render:renderMemo},
@@ -1284,6 +1286,252 @@ function saveHotAnalysis(title,cat){
 function delHotVideo(id){
   if(!confirm('删除这条分析？'))return;
   let v=Store.get('hot_videos',[]);v=v.filter(x=>x.id!==id);Store.set('hot_videos',v);renderHotVideoList();
+}
+
+/* ============ 起号计划 ============ */
+function renderLaunch(root){
+  const weekPlan=Store.get('launch_week',0); // 0-3
+  const records=Store.get('launch_records',[]);
+  const WEEKS=['第1周（养号期）','第2周（起量期）','第3周（转化期）','第4周（复盘优化）'];
+
+  root.innerHTML=`
+    <!-- 双号定位 -->
+    <div class="grid grid-2">
+      <div class="card" style="position:relative;border-left:4px solid #F59E0B">
+        <div class="card-header">
+          <div class="card-title"><span class="icon">🎭</span>号A · 留学生人设</div>
+          <span class="pill orange">引流主力</span>
+        </div>
+        <div style="font-size:15px;line-height:1.8">
+          <p><b>定位</b>：正在明斯克读书的留学生</p>
+          <p><b>人设</b>：接地气、有温度、找搭子、分享真实生活</p>
+          <p><b>核心任务</b>：制造流量 → 引到私域</p>
+          <p><b>绝不做</b>：不主动提中介、不推销</p>
+        </div>
+        <div class="section-title">内容方向</div>
+        <div style="font-size:14px;line-height:1.9;color:var(--text-gray)">
+          <div>📌 <b>生活费群聊截图</b>（每周1条）— 拉群让学生报数→截图发帖</div>
+          <div>📌 <b>找搭子</b>（每月1-2次）— "X月去明斯克，有没有一起的"</div>
+          <div>📌 <b>真实日常</b>（每周2-3条）— 明斯克下雪/宿舍/超市物价</div>
+          <div>📌 <b>避坑吐槽</b>（每周1条）— "来白俄之前没人告诉我的事"</div>
+        </div>
+        <div style="margin-top:10px;padding:10px;background:#FFFBEB;border-radius:8px;font-size:13px;color:#92400E">
+          <b>引流钩子</b>：评论区扣"预算/背景"→私信发方案→加微信→拉留学生群
+        </div>
+      </div>
+
+      <div class="card" style="position:relative;border-left:4px solid var(--primary)">
+        <div class="card-header">
+          <div class="card-title"><span class="icon">💑</span>号B · 中介对象视角</div>
+          <span class="pill green">信任建设</span>
+        </div>
+        <div style="font-size:15px;line-height:1.8">
+          <p><b>定位</b>：中介的对象，记录他的日常</p>
+          <p><b>人设</b>：又爱又恨——"他天天回微信烦死，但他真负责"</p>
+          <p><b>核心任务</b>：侧面展示专业 → 建立信任</p>
+          <p><b>绝不做</b>：不直接推销、不说"我很专业"</p>
+        </div>
+        <div class="section-title">内容方向</div>
+        <div style="font-size:14px;line-height:1.9;color:var(--text-gray)">
+          <div>📌 <b>吐槽型</b>（每周2条）— "吃饭回微信、看电影回微信"</div>
+          <div>📌 <b>心疼型</b>（每周1条）— "半夜学生有事他爬起来处理"</div>
+          <div>📌 <b>隐形炫耀</b>（每周1条）— "又收到学生妈妈寄的特产"</div>
+          <div>📌 <b>真实工作流</b>（每周1条）— "凌晨3点去机场送学生"</div>
+        </div>
+        <div style="margin-top:10px;padding:10px;background:#F0FDFA;border-radius:8px;font-size:13px;color:var(--primary-dark)">
+          <b>文案公式</b>：场景 + 吐槽 + 侧面证明专业（全程不推销）
+        </div>
+      </div>
+    </div>
+
+    <!-- 内容日历 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">📅</span>每周内容日历</div>
+        <div class="flex" style="gap:8px">
+          <button class="btn btn-ghost btn-sm" onclick="changeWeek(-1)">‹ 上一周</button>
+          <span class="pill blue" id="weekLabel">${WEEKS[weekPlan]}</span>
+          <button class="btn btn-ghost btn-sm" onclick="changeWeek(1)">下一周 ›</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>星期</th><th>号A · 留学生</th><th>号B · 中介对象</th><th>状态</th></tr>
+          </thead>
+          <tbody id="calendarBody"></tbody>
+        </table>
+      </div>
+      <div class="muted" style="margin-top:10px">每条发完点"已发"标记，数据记到下方追踪表</div>
+    </div>
+
+    <!-- 拍摄清单 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">🎬</span>号B 拍摄清单（前5条）</div>
+        <span class="muted">照着拍就行，不用剧本</span>
+      </div>
+      <div id="shotList"></div>
+    </div>
+
+    <!-- 数据追踪 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">📊</span>内容数据追踪</div>
+        <button class="btn btn-primary btn-sm" onclick="addLaunchRecord()">➕ 记一条</button>
+      </div>
+      <div id="launchStats"></div>
+      <div class="table-wrap" style="margin-top:14px">
+        <table>
+          <thead>
+            <tr><th>日期</th><th>号</th><th>内容</th><th>播放</th><th>私信</th><th>加微信</th><th>操作</th></tr>
+          </thead>
+          <tbody id="launchRecordsBody"></tbody>
+        </table>
+      </div>
+      <div id="launchRecordsEmpty"></div>
+    </div>
+  `;
+  renderCalendar(weekPlan);renderShotList();renderLaunchRecords();
+}
+
+const CALENDAR=[
+  // 第1周 养号期
+  [
+    {a:'生活费群聊截图（拉群报数→截图）',b:'吃饭时他回微信（偷拍15秒）'},
+    {a:'明斯克日常（超市物价/宿舍）',b:''},
+    {a:'找搭子帖（"X月去明斯克有一起的吗"）',b:'深夜回消息（拍屏幕光）'},
+    {a:'明斯克日常（上课/食堂）',b:''},
+    {a:'避坑吐槽（来之前没人告诉我的事）',b:'整理材料（拍桌上材料全景）'},
+    {a:'',b:'学生妈妈寄特产（拍开箱）'},
+    {a:'',b:'机场送机（拍他等人背影）'},
+  ],
+  // 第2周 起量期
+  [
+    {a:'生活费群聊截图（第二期，换人报数）',b:'周末他在帮学生理材料'},
+    {a:'明斯克日常（下雪/校园）',b:''},
+    {a:'避坑（白俄留学中介不会告诉你的3件事）',b:'他接电话处理学生紧急事'},
+    {a:'找搭子帖（不同月份/学校）',b:''},
+    {a:'明斯克日常（对比国内物价）',b:'他收到offer截图很开心的样子'},
+    {a:'',b:'学生反馈截图合集（他整理时的侧拍）'},
+    {a:'',b:'凌晨他去机场接新生'},
+  ],
+  // 第3周 转化期
+  [
+    {a:'生活费群聊截图（第三期）',b:'他给家长做方案（拍他打电话讲解）'},
+    {a:'真实案例故事（中专生小张在明斯克）',b:''},
+    {a:'避坑对比（国内三本15万vs白俄硕士4万）',b:'他半夜回微信被你吐槽'},
+    {a:'明斯克日常（学生生活vlog）',b:''},
+    {a:'找搭子帖（互动引导私信）',b:'他收到学生感谢信/锦旗'},
+    {a:'',b:'他帮学生处理签证问题（拍他着急的样子）'},
+    {a:'',b:'两人一起出镜：你问他白俄留学一年多少钱'},
+  ],
+  // 第4周 复盘优化
+  [
+    {a:'复刻前三周最火的那条',b:'复刻前三周最火的那条'},
+    {a:'明斯克日常（新角度）',b:''},
+    {a:'避坑（新的角度）',b:'他送学生入学后的疲惫+满足'},
+    {a:'真实案例（考研失败的学生现在怎样了）',b:''},
+    {a:'生活费截图（汇总版，多国对比）',b:'他整理学生档案（拍一摞材料）'},
+    {a:'',b:'学生毕业/录取的庆祝瞬间'},
+    {a:'',b:'总结篇：当中介对象一个月，我变了'},
+  ],
+];
+function renderCalendar(week){
+  const body=$('#calendarBody');if(!body)return;
+  const days=['周一','周二','周三','周四','周五','周六','周日'];
+  const done=Store.get('launch_cal_done',{});
+  body.innerHTML=CALENDAR[week].map((d,i)=>{
+    const key=`${week}-${i}`;
+    return `<tr>
+      <td><b>${days[i]}</b></td>
+      <td>${d.a?`<div style="font-size:14px">${esc(d.a)}</div>${d.a?`<button class="btn btn-ghost btn-sm" style="margin-top:4px;padding:3px 8px;font-size:12px" onclick="toggleCalDone('${key}-a')">${done[key+'-a']?'✅ 已发':'标记已发'}</button>`:''}</div>`:'<span class="muted">—</span>'}</td>
+      <td>${d.b?`<div style="font-size:14px">${esc(d.b)}</div><button class="btn btn-ghost btn-sm" style="margin-top:4px;padding:3px 8px;font-size:12px" onclick="toggleCalDone('${key}-b')">${done[key+'-b']?'✅ 已发':'标记已发'}</button></div>`:'<span class="muted">—</span>'}</td>
+      <td>${done[key+'-a']||done[key+'-b']?'<span class="pill green">完成</span>':'<span class="muted">待发</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+function toggleCalDone(key){
+  const done=Store.get('launch_cal_done',{});
+  done[key]=!done[key];
+  Store.set('launch_cal_done',done);
+  renderCalendar(Store.get('launch_week',0));
+}
+function changeWeek(dir){
+  let w=Store.get('launch_week',0)+dir;
+  if(w<0)w=0;if(w>3)w=3;
+  Store.set('launch_week',w);
+  $('#weekLabel').textContent=['第1周（养号期）','第2周（起量期）','第3周（转化期）','第4周（复盘优化）'][w];
+  renderCalendar(w);
+}
+
+const SHOT_LIST=[
+  {n:1,title:'吃饭时他回微信',how:'你俩吃饭，他边吃边看手机打字，你拍他15秒',copy:'跟中介谈恋爱第N天，吃饭永远在看手机。他说学生家长问签证的事不能不回。我算了一下，他一天回200多条消息，凌晨1点前没睡过。'},
+  {n:2,title:'深夜回消息',how:'睡觉前他还在打字，你拍屏幕光照他脸',copy:'凌晨11点他还在回微信。白俄有时差，学生的事不能隔夜。我旁边的位置永远是手机。'},
+  {n:3,title:'整理材料',how:'他桌上摊着申请材料，你拍全景',copy:'他的周末：帮学生理材料，说明天要交。比学生还着急，我说你歇会儿，他说这关系到人家一辈子。'},
+  {n:4,title:'学生妈妈寄特产',how:'他收到家长寄的东西，你拍开箱',copy:'今天又收到学生妈妈寄的苹果。他说这是今年第N个了。我数数柜子里还有几箱。'},
+  {n:5,title:'机场送机',how:'他去机场送学生，你拍他等人的背影',copy:'凌晨4点的机场，他去送学生。我说不能明天吗，他说家长不在他得在。'},
+];
+function renderShotList(){
+  const list=$('#shotList');if(!list)return;
+  list.innerHTML=SHOT_LIST.map(s=>`
+    <div style="border:1.5px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px">
+      <div class="flex-between" style="margin-bottom:8px">
+        <b style="font-size:16px">第${s.n}条：${esc(s.title)}</b>
+        <button class="btn btn-ghost btn-sm" onclick="copyShotCopy(${s.n-1})">📋 复制文案</button>
+      </div>
+      <div style="font-size:14px;color:var(--text-gray);margin-bottom:8px">📷 <b>怎么拍</b>：${esc(s.how)}</div>
+      <div style="background:#F8FAFC;padding:10px;border-radius:8px;font-size:14px;white-space:pre-wrap;line-height:1.7">${esc(s.copy)}</div>
+    </div>
+  `).join('');
+}
+function copyShotCopy(idx){
+  const c=SHOT_LIST[idx];if(!c)return;
+  navigator.clipboard?.writeText(c.copy).then(()=>toast('文案已复制 ✅')).catch(()=>toast('复制失败，请手动选择'));
+}
+
+function addLaunchRecord(){
+  const date=prompt('日期（如 0731）：',todayStr().slice(5).replace('-',''))||todayStr().slice(5).replace('-','');
+  const acc=prompt('哪个号？（A=留学生 / B=中介对象）','A')||'A';
+  const content=prompt('内容简述：','');if(!content)return;
+  const plays=prompt('播放量：','0')||'0';
+  const msgs=prompt('私信数：','0')||'0';
+  const wechat=prompt('加微信数：','0')||'0';
+  const records=Store.get('launch_records',[]);
+  records.push({id:uid(),date,acc:acc.toUpperCase(),content,plays,msgs,wechat});
+  Store.set('launch_records',records);renderLaunchRecords();toast('已记录 📊');
+}
+function renderLaunchRecords(){
+  const records=Store.get('launch_records',[]);
+  const body=$('#launchRecordsBody');const empty=$('#launchRecordsEmpty');if(!body)return;
+  // 统计
+  const totalPlays=records.reduce((s,r)=>s+(parseInt(r.plays)||0),0);
+  const totalMsgs=records.reduce((s,r)=>s+(parseInt(r.msgs)||0),0);
+  const totalWechat=records.reduce((s,r)=>s+(parseInt(r.wechat)||0),0);
+  const stats=$('#launchStats');if(stats){
+    stats.innerHTML=`<div class="grid grid-3" style="gap:14px">
+      <div class="stat-box"><div class="stat-num">${totalPlays}</div><div class="stat-label">总播放量</div></div>
+      <div class="stat-box" style="background:linear-gradient(135deg,#FEF3C7,#FDE68A)"><div class="stat-num" style="color:#92400E">${totalMsgs}</div><div class="stat-label">总私信数</div></div>
+      <div class="stat-box" style="background:linear-gradient(135deg,#D1FAE5,#A7F3D0)"><div class="stat-num" style="color:#065F46">${totalWechat}</div><div class="stat-label">总加微信</div></div>
+    </div>`;
+  }
+  if(!records.length){body.innerHTML='';empty.innerHTML=`<div class="empty"><span class="icon">📊</span>还没有数据，发完第一条来记录</div>`;return;}
+  empty.innerHTML='';
+  body.innerHTML=records.slice().reverse().map(r=>`
+    <tr>
+      <td>${esc(r.date)}</td>
+      <td><span class="pill ${r.acc==='A'?'orange':'green'}">${r.acc}</span></td>
+      <td style="max-width:200px">${esc(r.content)}</td>
+      <td>${esc(r.plays)}</td>
+      <td>${esc(r.msgs)}</td>
+      <td style="color:var(--success);font-weight:600">${esc(r.wechat)}</td>
+      <td><button class="btn-icon" onclick="delLaunchRecord('${r.id}')">🗑</button></td>
+    </tr>
+  `).join('');
+}
+function delLaunchRecord(id){
+  if(!confirm('删除这条记录？'))return;
+  let r=Store.get('launch_records',[]);r=r.filter(x=>x.id!==id);Store.set('launch_records',r);renderLaunchRecords();
 }
 
 /* ============ 3. 内容复盘 ============ */
