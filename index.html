@@ -1772,215 +1772,350 @@ function saveReviewSection(type){
   toast('已保存');
 }
 
-/* ============ 4. 发朋友圈 ============ */
+/* ============ 4. 发朋友圈 / 私域运营中心 ============ */
 function renderMoments(root){
   root.innerHTML=`
+    <!-- 每日3条打卡 -->
     <div class="card" style="position:relative">
-      <div class="watermark">✍️</div>
+      <div class="watermark">📱</div>
       <div class="card-header">
-        <div class="card-title"><span class="icon">✍️</span>留学共情文案库</div>
-        <span class="muted">白俄·哈国·俄罗斯 · 一手渠道</span>
+        <div class="card-title"><span class="icon">📱</span>每日朋友圈打卡</div>
+        <span class="muted">每天 3 条 · 早中晚固定类型</span>
       </div>
-      <p class="muted" style="margin-bottom:14px;font-size:15px;line-height:1.7">按共情角度分类的文案模板，每条都贴合咱们业务：<b>免语言成绩·免绩点·可跨专业·英语授课·硕士10个月·专升本14个月·包录取+面试培训</b>。直接套用或改写，发完记得回复评论。</p>
-
-      <!-- 共情角度 Tab -->
-      <div class="hot-tabs" id="copyTabs">
-        <button class="copy-tab hot-tab active" data-angle="budget">💰 预算焦虑</button>
-        <button class="copy-tab hot-tab" data-angle="background">🎓 背景自卑</button>
-        <button class="copy-tab hot-tab" data-angle="parent">👨‍👩‍👧 家长担忧</button>
-        <button class="copy-tab hot-tab" data-angle="reverse">🚀 逆袭改命</button>
-      </div>
-
-      <!-- 形式子筛选 -->
-      <div class="flex" style="gap:8px;margin-bottom:14px;flex-wrap:wrap">
-        <span class="muted" style="line-height:32px">形式：</span>
-        <button class="copy-form-btn btn btn-ghost btn-sm active" data-form="all">全部</button>
-        <button class="copy-form-btn btn btn-ghost btn-sm" data-form="朋友圈">朋友圈</button>
-        <button class="copy-form-btn btn btn-ghost btn-sm" data-form="小红书">小红书</button>
-        <button class="copy-form-btn btn btn-ghost btn-sm" data-form="口播">口播稿</button>
-      </div>
-
-      <div id="copyList"></div>
+      <div id="momentsCheckin"></div>
+      <div id="momentsStreak" style="margin-top:14px"></div>
     </div>
 
-    <!-- 自建文案收藏 -->
+    <!-- 今日朋友圈灵感 -->
     <div class="card">
       <div class="card-header">
-        <div class="card-title"><span class="icon">📥</span>我的文案收藏</div>
-        <span class="muted">看到好文案粘贴进来</span>
+        <div class="card-title"><span class="icon">💡</span>今日朋友圈灵感</div>
+        <button class="btn btn-ghost btn-sm" onclick="refreshMomentInspire()">↻ 换一批</button>
       </div>
-      <div style="margin-bottom:10px">
-        <input class="input" id="myCopyTitle" placeholder="文案标题 / 主题" style="margin-bottom:8px">
-        <textarea class="textarea" id="myCopyContent" placeholder="粘贴文案原文..." style="margin-bottom:8px"></textarea>
-        <div class="grid grid-3" style="gap:10px">
-          <select class="select" id="myCopyAngle">
-            <option value="budget">💰 预算焦虑</option>
-            <option value="background">🎓 背景自卑</option>
-            <option value="parent">👨‍👩‍👧 家长担忧</option>
-            <option value="reverse">🚀 逆袭改命</option>
-          </select>
-          <select class="select" id="myCopyForm">
-            <option value="朋友圈">朋友圈</option>
-            <option value="小红书">小红书</option>
-            <option value="口播">口播稿</option>
-          </select>
-          <button class="btn btn-accent" onclick="addMyCopy()">收藏</button>
-        </div>
+      <p class="muted" style="margin-bottom:14px;font-size:14px">每天推荐 3 个可发的话题方向，挑一个写就行</p>
+      <div id="momentInspireList"></div>
+    </div>
+
+    <!-- 场景化灵感库 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">📂</span>场景化文案灵感库</div>
+        <span class="muted">按私域场景分类 · 挑着用</span>
       </div>
-      <div id="myCopyList" style="margin-top:16px"></div>
+      <div class="hot-tabs" id="sceneTabs">
+        <button class="scene-tab hot-tab active" data-scene="remember">🔔 不被遗忘</button>
+        <button class="scene-tab hot-tab" data-scene="consult">💬 促咨询</button>
+        <button class="scene-tab hot-tab" data-scene="trust">🤝 建信任</button>
+        <button class="scene-tab hot-tab" data-scene="close">🎯 促成交</button>
+      </div>
+      <div id="sceneCopyList"></div>
+    </div>
+
+    <!-- 客户分层管理 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">👥</span>客户分层管理</div>
+        <button class="btn btn-primary btn-sm" onclick="addClient()">➕ 加客户</button>
+      </div>
+      <p class="muted" style="margin-bottom:14px;font-size:14px">给微信好友打标签分级，重点跟进谁一目了然。S=近期要成交 A=在考虑 B=刚加/沉默 C=已成交/无需跟进</p>
+      <div id="clientStats" style="margin-bottom:14px"></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>昵称</th><th>等级</th><th>来源</th><th>上次互动</th><th>下一步动作</th><th>操作</th></tr></thead>
+          <tbody id="clientBody"></tbody>
+        </table>
+      </div>
+      <div id="clientEmpty"></div>
+    </div>
+
+    <!-- 私域维系方法论 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">🧠</span>私域维系方法论</div>
+        <span class="muted">加上好友后怎么不被遗忘</span>
+      </div>
+      <div id="privateDomainGuide"></div>
     </div>
   `;
-  bindCopyTabs();renderCopyList();renderMyCopyList();
+  renderMomentsCheckin();renderMomentInspire();renderSceneCopyList();renderClients();renderPrivateDomainGuide();
+  bindSceneTabs();
 }
 
-/* ---- 共情文案数据 ---- */
-const COPY_ANGLES={budget:'💰 预算焦虑',background:'🎓 背景自卑',parent:'👨‍👩‍👧 家长担忧',reverse:'🚀 逆袭改命'};
-let _copyFormFilter='all';
-const PRESET_COPIES=[
-  /* ===== 预算焦虑 ===== */
-  {angle:'budget',form:'朋友圈',title:'一年总花费3-5万，比国内三本还便宜',
-    link:'',
-    source:'这是为你白俄业务写的原创文案模板，无外部原视频。可直接复制使用或改写。',
-   text:'今天有个妈妈算完账，愣了一下说："这比我家孩子读三本还便宜？"\n\n真的。国内三本一年学费2-3万加生活费，四年十几万打底。\n而白俄国立大学，一年总花费3-5万，英语授课硕士只要10个月毕业。\n\n不是留学有多贵，是你不知道有这条路。\n我们是一手中介，没有中间商，费用透明到每一笔都列给你看。\n\n预算有限想给孩子找个出路的家长，私信我，帮你算笔明细账。'},
-  {angle:'budget',form:'小红书',title:'家里没钱也能留学？白俄一年3-5万真的行',
-    link:'',
-    source:'这是为你白俄业务写的原创小红书文案模板，可直接发布或改写。',
-   text:'📌 家里条件一般也能留学？白俄一年3-5万真的行！\n\n先别急着划走，听我算笔账👇\n\n💸 学费：白俄罗斯国立大学，每年2-3万\n💸 生活费：吃饭住宿一个月2000-3000\n💸 一年总花费：3-5万\n\n对比一下：\n国内三本：学费2.5万+生活费，一年5-6万\n国内考研二战：报班+生活费，一年3-5万还未必考上\n\n而且我们是一手中介，直接对接学校，没有中间商加价。\n英语授课，不用学俄语，硕士10个月毕业，专升本14个月。\n\n不是留学贵，是你只听过英美澳。\n#白俄罗斯留学 #低成本留学 #留学中介 #一年制硕士'},
-  {angle:'budget',form:'口播',title:'留学一年花3万你信吗',
-    link:'',
-    source:'这是为你白俄业务写的原创口播稿模板，可直接拍摄使用。',
-   text:'（开头直视镜头）留学一年只花3万，你信吗？别划走，我给你算笔真账。\n\n（中段，出数字）白俄罗斯国立大学，英语授课硕士，10个月毕业。学费2万多，生活费一个月2000多，一年总花费3-5万。这比国内好多三本都便宜。\n\n（情绪转折）我知道你在想什么——这么便宜是不是野鸡大学？不是。白国立是该国排名第一的综合性大学，中国教育部认可，回国能做留服认证。\n\n（引导）想了解具体费用明细的，评论区扣"预算"，我把价目表发你。'},
-  /* ===== 背景自卑 ===== */
-  {angle:'background',form:'朋友圈',title:'考研失利？还有条更快的路',
-    link:'',
-    source:'这是为你白俄业务写的原创朋友圈文案模板，可直接发布或改写。',
-   text:'后台收到一条私信，看完了有点心疼——\n"老师，我考研二战又没上岸，是不是这辈子就这样了？"\n\n孩子，考研不是唯一的独木桥。\n白俄、哈国的英语授课硕士，不用考研成绩，不用雅思托福，不用绩点，还可以跨专业申请。10个月毕业，比国内读研还快。\n\n我们是一手渠道，包录取，学校有个简单面试，我们会给你做面试培训，不用担心。\n\n考研失利不是人生的终点，是拐弯的信号。\n想了解这条路的，私信你的背景，我帮你看看能申什么学校。'},
-  {angle:'background',form:'小红书',title:'中专生也能留学拿本科？真的可以',
-    link:'',
-    source:'这是为你白俄业务写的原创小红书文案模板，可直接发布或改写。',
-   text:'📌 中专/职高也能留学拿全日制本科？真的可以！\n\n先别急着否定自己，看下去👇\n\n白俄罗斯专升本，14个月拿本科学历，中国教育部认可。\n✅ 不看高考成绩\n✅ 不需要语言成绩\n✅ 英语授课，不用学俄语\n✅ 可以跨专业\n\n不管你是中专、职高、还是专科，都能申。\n而且我们是一手中介，直接对接学校，包录取，有面试培训。\n\n国内专升本卷上天，不如换个赛道。\n#专升本 #白俄罗斯留学 #中专生 #留学 #学历提升'},
-  {angle:'background',form:'口播',title:'没雅思没绩点能留学吗',
-    link:'',
-    source:'这是为你白俄业务写的原创口播稿模板，可直接拍摄使用。',
-   text:'（开头钩子）没雅思、没托福、GPA也拿不出手，能留学吗？能，而且能去教育部认可的正规大学。\n\n（中段）白俄罗斯、哈萨克斯坦的英语授课项目，申请制入学，不看语言成绩，不看绩点，还能跨专业。硕士10个月毕业，专升本14个月。学校有个简单面试，我们包面试培训，包录取。\n\n（情绪）我知道很多人一听自己背景不好就先怂了。但留学申请不是只看成绩，是看渠道和信息差。我们是一手中介，直接对接学校，你够不够格申，我们说了算。\n\n（引导）背景一般想知道能申什么学校？评论区发你的学历背景，我帮你估一下。'},
-  /* ===== 家长担忧 ===== */
-  {angle:'parent',form:'朋友圈',title:'白俄安全吗？说说实话',
-    link:'',
-    source:'这是为你白俄业务写的原创朋友圈文案模板，可直接发布或改写。',
-   text:'几乎每个家长都会问一个问题："老师，白俄罗斯/哈萨克斯坦安全吗？"\n\n我特别理解这种担心。孩子第一次出国，离家几千公里，哪个父母不揪心。\n\n说几个事实：\n1. 白俄罗斯社会治安在整个欧洲都算好的，明斯克晚上出门很安全\n2. 哈萨克斯坦是中亚最稳定的国家之一，对中国友好\n3. 我们是一手中介，当地有对接老师，孩子从接机、住宿、入学到生活，全程有人管\n4. 战争担忧——白俄虽然和俄罗斯是盟友，但本土没有战事，学校正常上课\n\n不是把孩子扔出去就不管了，是换了个地方有人帮你看护。\n\n不放心的家长，随时找我视频聊聊，把顾虑都说开。'},
-  {angle:'parent',form:'小红书',title:'俄语国家留学，文凭回国管用吗',
-    link:'',
-    source:'这是为你白俄业务写的原创小红书文案模板，可直接发布或改写。',
-   text:'📌 白俄/哈国留学，文凭回国管用吗？一次性说清楚\n\n家长最担心的3个问题，今天全回答👇\n\n1️⃣ 文凭认可吗？\n白俄罗斯国立大学、哈萨克国立大学都是中国教育部认证院校，回国可做留服认证，考公考编都认。\n\n2️⃣ 俄语难学吗？\n我们推的都是英语授课项目，不用学俄语！日常有基础俄语够用。\n\n3️⃣ 孩子去了有人管吗？\n我们是一手中介，当地有常驻老师，接机+住宿+入学+生活全程跟进，不是把孩子扔出去就完事。\n\n硕士10个月、专升本14个月，时间短见效快。\n#白俄罗斯留学 #哈萨克斯坦留学 #留学认证 #家长必看'},
-  {angle:'parent',form:'口播',title:'送孩子去白俄，家长最担心的3个问题',
-    link:'',
-    source:'这是为你白俄业务写的原创口播稿模板，可直接拍摄使用。',
-   text:'（开头）送孩子去白俄罗斯留学，家长最担心什么？我做了这么多年，总结出来就三个字——安、认、管。\n\n（展开）第一，安全。白俄罗斯社会治安在欧洲算好的，明斯克晚上出门没问题。战争的事本土没波及，学校正常上课。第二，认可。白国立是教育部认证院校，回国能做留服认证，考公考编都认。第三，管。我们是一手中介，当地有常驻老师，从接机到住宿到入学全程管，不是扔出去就完事。\n\n（情绪）我特别理解家长的担心，孩子第一次出国谁都不放心。但担心归担心，别让担心耽误了孩子的一条出路。\n\n（引导）还有顾虑的家长，私信我，咱们视频聊，把所有问题摆开说。'},
-  /* ===== 逆袭改命 ===== */
-  {angle:'reverse',form:'朋友圈',title:'那个中专毕业的孩子，现在在明斯克',
-    link:'',
-    source:'这是为你白俄业务写的原创朋友圈文案模板，可直接发布或改写。',
-   text:'去年有个孩子找到我，中专毕业，在老家奶茶店打工。\n他说："老师，我不想一辈子就这样了，但我这学历能去哪？"\n\n国内专升本他卷不动，自考又怕含金量不够。我帮他申了白俄罗斯专升本，14个月，英语授课，不用学俄语。一年总花费4万出头。\n\n上个月他给我发消息，说明斯克下雪了，他在宿舍煮火锅，下学期要开始准备毕业论文。\n\n学历不是终点，是一个让他看见更大世界的入口。\n\n如果你也觉得自己卡在某个地方动不了，私信聊聊，也许有你想不到的路。'},
-  {angle:'reverse',form:'小红书',title:'从考研二战失败到白俄硕士毕业，我用了10个月',
-    link:'',
-    source:'这是为你白俄业务写的原创小红书文案模板，可直接发布或改写。',
-   text:'📌 从考研二战失败到拿硕士文凭，我只用了10个月\n\n不是段子，是我带过的真实学生👇\n\n👦 背景：普通二本，考研二战失利，GPA 2.8\n🌍 去向：白俄罗斯国立大学，英语授课硕士\n⏱ 用时：10个月毕业\n💰 花费：总花费4万多\n\n他做对了什么？\n1️⃣ 没死磕国内考研，果断换赛道\n2️⃣ 选了免语言成绩、免绩点的白俄项目\n3️⃣ 英语授课，不用从头学俄语\n4️⃣ 找了一手中介，没有中间商，费用透明\n\n现在他拿着留服认证的硕士文凭，回国考编上岸了。\n\n考研不是唯一的路，拐个弯也许更快。\n#考研失利 #白俄罗斯留学 #一年制硕士 #逆袭'},
-  {angle:'reverse',form:'口播',title:'考研失败的孩子，后来怎么样了',
-    link:'',
-    source:'这是为你白俄业务写的原创口播稿模板，可直接拍摄使用。',
-   text:'（开头，情绪前置）考研失败的孩子，后来都怎么样了？我讲一个去年带过的学生。\n\n（故事）二本毕业，考研二战又没上岸，找到我的时候整个人是灰的。他说觉得自己这辈子就这样了。我帮他申了白俄罗斯国立大学的英语授课硕士，10个月毕业，一年总花费4万出头，不用雅思不用绩点。\n\n（转折）上个月他毕业了，拿着留服认证的硕士文凭，回国考编上岸。他给我发消息说："老师，谢谢你当时没让我放弃。"\n\n（情绪）我想说的是，考研不是独木桥，人生也没有哪一次失败能定终身。关键是你要知道，还有别的路可以走。\n\n（引导）考研不理想想知道还有什么出路的，评论区扣"出路"，我帮你看看。'}
+/* ---- 每日打卡 ---- */
+const CHECKIN_SLOTS=[
+  {slot:'早 9:00-11:00',type:'干货/价值输出',tip:'发一条有用的：费用明细/院校科普/申请流程/避坑提醒',icon:'☀️'},
+  {slot:'中 12:00-14:00',type:'案例/真实展示',tip:'发一条真实的：学生反馈/offer截图/明斯克日常/工作瞬间',icon:'🍱'},
+  {slot:'晚 19:00-21:00',type:'共情/互动引导',tip:'发一条走心的：学员故事/家长担忧/互动话题/软性种草',icon:'🌙'},
 ];
+function renderMomentsCheckin(){
+  const today=todayStr();
+  const done=Store.get('moments_checkin',{});
+  const todayDone=done[today]||[false,false,false];
+  const list=$('#momentsCheckin');if(!list)return;
+  list.innerHTML=CHECKIN_SLOTS.map((s,i)=>`
+    <div class="todo-item ${todayDone[i]?'done':''}" style="border-left:3px solid ${todayDone[i]?'var(--success)':'var(--accent)'}">
+      <div class="checkbox ${todayDone[i]?'checked':''}" onclick="toggleCheckin(${i})"></div>
+      <div class="todo-text">
+        <b>${s.icon} ${s.slot}</b> · ${s.type}
+        <div class="muted" style="font-size:13px;margin-top:2px">${s.tip}</div>
+      </div>
+    </div>
+  `).join('');
+  // 连续打卡天数
+  const streak=calcCheckinStreak();
+  const div=$('#momentsStreak');if(!div)return;
+  const allDone=todayDone.every(x=>x);
+  div.innerHTML=`
+    <div class="flex-between">
+      <span class="muted">连续完成天数：<b style="color:var(--accent);font-size:18px">🔥 ${streak}</b> 天</span>
+      <span>${todayDone.filter(x=>x).length}/3 ${allDone?'<span class="pill green">今日已完成 ✅</span>':'<span class="pill orange">继续加油</span>'}</span>
+    </div>
+  `;
+}
+function toggleCheckin(i){
+  const today=todayStr();
+  const done=Store.get('moments_checkin',{});
+  if(!done[today])done[today]=[false,false,false];
+  done[today][i]=!done[today][i];
+  Store.set('moments_checkin',done);
+  renderMomentsCheckin();
+}
+function calcCheckinStreak(){
+  const done=Store.get('moments_checkin',{});
+  let streak=0;
+  const d=new Date();
+  while(true){
+    const ds=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const t=done[ds];
+    if(t&&t.every(x=>x)){streak++;d.setDate(d.getDate()-1);}
+    else break;
+  }
+  return streak;
+}
 
-function bindCopyTabs(){
-  $$('.copy-tab').forEach(t=>{
+/* ---- 今日灵感 ---- */
+const MOMENT_INSPIRES=[
+  // 不被遗忘型
+  '发一条明斯克今天的天气/街景照片，配一句"今天明斯克X度，学生说..."',
+  '晒一张你今天处理的工作截图（打码），配"今天帮X个学生处理了..."',
+  '发一条"留学冷知识"：白俄的X跟国内不一样...',
+  '拍一张你桌上的申请材料/工作台，配"今天的日常"',
+  '发一条"上周有学生问我的问题"，分享你的回答',
+  '发一条"最近明斯克发生的事"，跟留学生活相关的新闻/变化',
+  '晒学生给你发的日常照片/反馈（打码），配一句感受',
+  '发一条"我做中介X年了，最常被问到的问题是..."',
+  // 价值输出型
+  '发一张白俄/哈国费用明细表，配"很多人问一年多少钱，统一回复"',
+  '发一条"免语言成绩的项目清单"，列出3-5个学校',
+  '发一条"申请时间线"：从签约到出发要多久，每步做什么',
+  '发一条"白俄vs国内"对比：费用/时间/含金量',
+  '发一条"哪些学生适合白俄/哈国"，给3-4个画像',
+  '发一条"哪些学生不适合白俄"，反向筛选更显真诚',
+  '发一条"面试培训都培训什么"，展示你的服务细节',
+  '发一条"英语授课不用学俄语"的真相科普',
+  // 共情互动型
+  '发一条"去年有个学生..."的真实故事（化名+真实细节）',
+  '发一条"家长最担心的3个问题"，逐个回答',
+  '发一条"如果你预算只有X万，我会建议..."',
+  '发一条互动话题："你觉得留学最大的收获是什么？评论区聊聊"',
+  '发一条"做中介这些年，最让我感动的一件事"',
+  '发一条"考研失利不是终点"的鼓励，软性带出你的项目',
+  '发一条"中专/职高也能留学"的案例，打破认知',
+  '发一条"凌晨X点我还在回微信"的真实工作状态',
+];
+function renderMomentInspire(){
+  const list=$('#momentInspireList');if(!list)return;
+  const seed=Store.get('moments_inspire_seed',0);
+  // 用种子选3条不重复的
+  const picks=[];
+  const used=new Set();
+  for(let i=0;i<3;i++){
+    let idx=(seed+i*7)%MOMENT_INSPIRES.length;
+    while(used.has(idx)){idx=(idx+1)%MOMENT_INSPIRES.length;}
+    used.add(idx);
+    picks.push(MOMENT_INSPIRES[idx]);
+  }
+  list.innerHTML=picks.map((p,i)=>`
+    <div style="display:flex;gap:10px;padding:12px 14px;background:#F8FAFC;border-radius:10px;margin-bottom:8px;border-left:3px solid var(--primary-light)">
+      <span style="font-size:18px">${['💡','🎯','✨'][i]}</span>
+      <div style="flex:1;font-size:15px;line-height:1.6">${esc(p)}</div>
+      <button class="btn-icon" onclick="copyInspire(${i})" title="复制">📋</button>
+    </div>
+  `).join('');
+  // 暂存当前 picks
+  window._currentInspires=picks;
+}
+function refreshMomentInspire(){
+  let seed=Store.get('moments_inspire_seed',0);
+  seed=(seed+3)%MOMENT_INSPIRES.length;
+  Store.set('moments_inspire_seed',seed);
+  renderMomentInspire();toast('已换一批灵感 ✨');
+}
+function copyInspire(i){
+  const t=window._currentInspires?.[i];if(!t)return;
+  navigator.clipboard?.writeText(t).then(()=>toast('灵感已复制 ✅')).catch(()=>toast('复制失败'));
+}
+
+/* ---- 场景化文案库 ---- */
+const SCENE_COPIES={
+  remember:[
+    {title:'明斯克今日天气+学生日常',text:'今天明斯克零下15度❄️\n学生发来的宿舍照片，暖气给得很足\n出门上课5分钟，室内穿短袖\n\n这就是白俄留学的真实日常\n有人问冷不冷？冷。但比国内考研卷不冷。\n\n#白俄罗斯留学 #明斯克日常'},
+    {title:'今天处理的工作截图',text:'今天的工作日常👇\n✅ 帮2个学生提交了申请材料\n✅ 跟进3个在途学生的签证进度\n✅ 给一个家长做了40分钟方案讲解\n✅ 面试培训1小时\n\n忙但充实\n做中介最大的成就感：看到学生拿到offer那一刻\n\n有留学问题随时找我聊聊'},
+    {title:'留学冷知识',text:'白俄冷知识🧊\n\n1. 白俄罗斯国立大学比北大还早建校30年\n2. 明斯克的地铁是中国帮建的\n3. 白俄的学费可以用人民币付\n4. 留学生可以合法打工\n5. 英语授课项目不用学俄语\n\n每天分享一个，关注我不迷路'},
+  ],
+  consult:[
+    {title:'预算X万能去哪？帮你算',text:'最近被问最多的：预算有限能去哪？\n\n统一回复👇\n\n💰 3-5万/年：白俄罗斯（英语授课硕士10个月）\n💰 5-8万/年：哈萨克斯坦\n💰 8-12万/年：俄罗斯（莫斯科/圣彼得堡）\n\n免语言成绩、免绩点、可跨专业\n一手中介直接对接学校，没有中间商\n\n评论区发你的预算+学历，我帮你看看能去哪 👇'},
+    {title:'免费帮你做个留学方案',text:'今天有空，免费帮3个人做留学方案📝\n\n我会根据你的：\n• 学历背景\n• 预算范围\n• 目标方向\n\n给你推荐最适合的学校+项目\n\n白俄/哈国/俄罗斯，一手中介直接对接\n先到先得，评论区扣"方案"'},
+    {title:'你适合白俄留学吗？3条标准',text:'不是所有人都适合白俄留学\n但这3种人特别适合👇\n\n1️⃣ 预算3-5万/年，想拿认证文凭\n2️⃣ 考研失利/中专/专科想跳轨\n3️⃣ 不想学小语种，要英语授课\n\n如果你中了2条以上，私信我聊聊\n不合适我也会直接告诉你，不硬推'},
+  ],
+  trust:[
+    {title:'收到学生妈妈的感谢',text:'今天收到学生妈妈寄来的特产🎁\n说实话做了这么多年中介\n最开心的不是签约那一刻\n是家长发消息说"老师谢谢你"\n\n这个孩子去年中专毕业找到我\n现在在明斯克读本科第一年\n上个月妈妈说孩子开朗了很多\n\n这就是我做这行的意义'},
+    {title:'凌晨接学生紧急电话',text:'凌晨1点接到学生电话\n说宿舍暖气坏了不知道找谁\n我立马联系当地对接老师去处理\n20分钟修好了\n\n学生说"老师你怎么还没睡"\n我说"你们在那边我就是家长"\n\n做中介不只是办手续\n是孩子在国外的依靠'},
+    {title:'我的服务清单',text:'很多人问"你中介费包含什么"\n统一列一下👇\n\n✅ 选校+方案规划\n✅ 申请材料指导+审核\n✅ 学校面试培训（包录取）\n✅ 签证办理\n✅ 接机+住宿安排\n✅ 当地老师持续跟进\n✅ 毕业后留服认证指导\n\n一手中介，费用透明，没有中间商\n不是甩手掌柜，是全程陪跑'},
+  ],
+  close:[
+    {title:'本月名额快满了',text:'提醒一下\n白俄XX大学秋季入学名额还剩X个\n我们包录取是因为有面试培训\n但名额是先到先得\n\n目前签约的都在走材料了\n犹豫的家长建议这周定下来\n晚了就得等明年春季\n\n私信我了解详情'},
+    {title:'限时免申请费',text:'本月签约的福利👇\n\n🎁 免申请服务费（原价XXXX）\n🎁 送面试培训3节课\n🎁 送接机服务\n\n原因：冲刺秋季入学名额\n名额有限，满额恢复原价\n\n已经是最低价了，趁现在'},
+    {title:'同批次学生已出发',text:'今天又送走一批学生去明斯克✈️\n\n其中3个是上个月签约的\n从签约到出发只用了X周\n材料+签证+面试一路绿灯\n\n下一批X月出发\n想赶这批的最晚X号签约\n再晚只能等下一期了\n\n赶时间的家长私信我'},
+  ]
+};
+function bindSceneTabs(){
+  $$('.scene-tab').forEach(t=>{
     t.onclick=function(){
-      $$('.copy-tab').forEach(x=>x.classList.remove('active'));
+      $$('.scene-tab').forEach(x=>x.classList.remove('active'));
       this.classList.add('active');
-      renderCopyList();
-    };
-  });
-  $$('.copy-form-btn').forEach(b=>{
-    b.onclick=function(){
-      $$('.copy-form-btn').forEach(x=>x.classList.remove('active'));
-      this.classList.add('active');
-      _copyFormFilter=this.dataset.form;
-      renderCopyList();
+      renderSceneCopyList();
     };
   });
 }
-function renderCopyList(){
-  const list=$('#copyList');if(!list)return;
-  const angle=$('.copy-tab.active')?.dataset.angle||'budget';
-  let all=[...PRESET_COPIES.filter(c=>c.angle===angle),...Store.get('my_copies',[]).filter(c=>c.angle===angle)];
-  if(_copyFormFilter!=='all') all=all.filter(c=>c.form===_copyFormFilter);
-  if(!all.length){list.innerHTML=`<div class="empty"><span class="icon">✍️</span>这个分类还没有文案</div>`;return;}
-  let presetCount=PRESET_COPIES.filter(x=>x.angle===angle&&(_copyFormFilter==='all'||x.form===_copyFormFilter)).length;
-  list.innerHTML=all.map((c,i)=>{
-    const isPreset=i<presetCount;
-    return `
+function renderSceneCopyList(){
+  const list=$('#sceneCopyList');if(!list)return;
+  const scene=$('.scene-tab.active')?.dataset.scene||'remember';
+  const copies=SCENE_COPIES[scene]||[];
+  if(!copies.length){list.innerHTML=`<div class="empty"><span class="icon">📂</span>这个场景还没有文案</div>`;return;}
+  list.innerHTML=copies.map((c,i)=>`
     <div class="hot-video-item">
       <div class="hv-head" onclick="this.nextElementSibling.classList.toggle('open')">
         <div style="flex:1;min-width:0">
           <div class="flex" style="gap:8px;flex-wrap:wrap">
-            ${isPreset?'<span class="pill green">精选</span>':'<span class="pill orange">我的</span>'}
-            <span class="pill blue">${esc(c.form)}</span>
-            <b style="font-size:16px">${esc(c.title)}</b>
+            <span class="pill blue">场景文案</span>
+            <b style="font-size:15px">${esc(c.title)}</b>
           </div>
         </div>
-        <span style="font-size:20px;color:var(--text-light)">▾</span>
+        <span style="font-size:18px;color:var(--text-light)">▾</span>
       </div>
       <div class="hv-body">
         <div style="background:#F8FAFC;padding:14px;border-radius:8px;font-size:15px;white-space:pre-wrap;line-height:1.7">${esc(c.text)}</div>
-        ${c.source ? `
-        <div style="margin-top:10px;padding:10px;background:#FFFBEB;border-radius:8px;border-left:3px solid #FBBF24;font-size:14px;color:var(--text-gray);white-space:pre-wrap;line-height:1.6">
-          <b>📄 参考说明：</b>${esc(c.source)}
-        </div>` : ''}
         <div class="flex" style="margin-top:10px;gap:8px">
-          <button class="btn btn-primary btn-sm" onclick="copyCopyText(${i},'${angle}')">📋 复制文案</button>
-          ${!isPreset?`<button class="btn btn-danger btn-sm" onclick="delMyCopy('${c.id}')">🗑 删除</button>`:''}
+          <button class="btn btn-primary btn-sm" onclick="copySceneCopy('${scene}',${i})">📋 复制文案</button>
         </div>
       </div>
-    </div>`;
-  }).join('');
-}
-function copyCopyText(idx,angle){
-  let all=[...PRESET_COPIES.filter(c=>c.angle===angle),...Store.get('my_copies',[]).filter(c=>c.angle===angle)];
-  if(_copyFormFilter!=='all') all=all.filter(c=>c.form===_copyFormFilter);
-  const c=all[idx];if(!c)return;
-  navigator.clipboard?.writeText(c.text).then(()=>toast('文案已复制，去粘贴吧 ✅')).catch(()=>{toast('复制失败，请手动选择文字复制');});
-}
-function renderMyCopyList(){
-  const list=$('#myCopyList');if(!list)return;
-  const copies=Store.get('my_copies',[]);
-  if(!copies.length){list.innerHTML=`<div class="empty"><span class="icon">📥</span>还没有收藏的文案</div>`;return;}
-  list.innerHTML=copies.map(c=>`
-    <div style="border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px">
-      <div class="flex-between" style="margin-bottom:6px">
-        <div class="flex" style="gap:6px;flex-wrap:wrap">
-          <span class="pill blue">${esc(c.form)}</span>
-          <span class="pill orange">${COPY_ANGLES[c.angle]||c.angle}</span>
-          <b style="font-size:15px">${esc(c.title)}</b>
-        </div>
-        <button class="btn-icon" onclick="delMyCopy('${c.id}')">🗑</button>
-      </div>
-      <div style="background:#F8FAFC;padding:10px;border-radius:8px;font-size:14px;white-space:pre-wrap;max-height:120px;overflow:auto">${esc(c.content)}</div>
     </div>
   `).join('');
 }
-function addMyCopy(){
-  const title=$('#myCopyTitle').value.trim();const content=$('#myCopyContent').value.trim();
-  if(!title&&!content){toast('请填写标题或内容');return;}
-  const angle=$('#myCopyAngle').value;const form=$('#myCopyForm').value;
-  const copies=Store.get('my_copies',[]);
-  copies.push({id:uid(),title:title||'未命名',content,angle,form});
-  Store.set('my_copies',copies);
-  $('#myCopyTitle').value='';$('#myCopyContent').value='';
-  renderMyCopyList();renderCopyList();toast('已收藏 ⭐');
+function copySceneCopy(scene,i){
+  const c=SCENE_COPIES[scene]?.[i];if(!c)return;
+  navigator.clipboard?.writeText(c.text).then(()=>toast('文案已复制 ✅')).catch(()=>toast('复制失败'));
 }
-function delMyCopy(id){
-  if(!confirm('删除这条文案？'))return;
-  let c=Store.get('my_copies',[]);c=c.filter(x=>x.id!==id);Store.set('my_copies',c);
-  renderMyCopyList();renderCopyList();
+
+/* ---- 客户分层管理 ---- */
+function addClient(){
+  const name=prompt('客户昵称/备注：');if(!name)return;
+  const level=prompt('等级（S=近期要成交 / A=在考虑 / B=刚加/沉默 / C=已成交/无需跟进）：','B')||'B';
+  const source=prompt('来源（小红书/朋友圈/转介绍/其他）：','小红书')||'小红书';
+  const lastDate=prompt('上次互动日期（如 0731）：',todayStr().slice(5).replace('-',''))||todayStr().slice(5).replace('-','');
+  const nextAction=prompt('下一步动作（如：发案例/邀咨询电话/等回复）：','')||'';
+  const clients=Store.get('clients',[]);
+  clients.push({id:uid(),name,level:level.toUpperCase(),source,lastDate,nextAction});
+  Store.set('clients',clients);renderClients();toast('客户已添加 👥');
+}
+function renderClients(){
+  const clients=Store.get('clients',[]);
+  const body=$('#clientBody');const empty=$('#clientEmpty');if(!body)return;
+  // 统计
+  const stats={S:0,A:0,B:0,C:0};
+  clients.forEach(c=>{stats[c.level]=(stats[c.level]||0)+1;});
+  const statsDiv=$('#clientStats');if(statsDiv){
+    statsDiv.innerHTML=`<div class="grid grid-4" style="gap:10px">
+      <div class="stat-box" style="background:linear-gradient(135deg,#FEE2E2,#FECACA)"><div class="stat-num" style="color:#991B1B">${stats.S||0}</div><div class="stat-label">S 近期要成交</div></div>
+      <div class="stat-box" style="background:linear-gradient(135deg,#FEF3C7,#FDE68A)"><div class="stat-num" style="color:#92400E">${stats.A||0}</div><div class="stat-label">A 在考虑</div></div>
+      <div class="stat-box" style="background:linear-gradient(135deg,#DBEAFE,#BFDBFE)"><div class="stat-num" style="color:#1E40AF">${stats.B||0}</div><div class="stat-label">B 刚加/沉默</div></div>
+      <div class="stat-box" style="background:linear-gradient(135deg,#D1FAE5,#A7F3D0)"><div class="stat-num" style="color:#065F46">${stats.C||0}</div><div class="stat-label">C 已成交</div></div>
+    </div>`;
+  }
+  if(!clients.length){body.innerHTML='';empty.innerHTML=`<div class="empty"><span class="icon">👥</span>还没有客户记录，加上你的微信好友试试</div>`;return;}
+  empty.innerHTML='';
+  const levelColor={S:'red',A:'orange',B:'blue',C:'green'};
+  body.innerHTML=clients.slice().reverse().map(c=>`
+    <tr>
+      <td><b>${esc(c.name)}</b></td>
+      <td><span class="pill ${levelColor[c.level]||''}">${esc(c.level)}</span></td>
+      <td>${esc(c.source)}</td>
+      <td>${esc(c.lastDate)}</td>
+      <td style="max-width:200px;font-size:14px">${esc(c.nextAction||'—')}</td>
+      <td>
+        <button class="btn-icon" onclick="editClient('${c.id}')" title="编辑">✏️</button>
+        <button class="btn-icon" onclick="delClient('${c.id}')" title="删除">🗑</button>
+      </td>
+    </tr>
+  `).join('');
+}
+function editClient(id){
+  const clients=Store.get('clients',[]);const c=clients.find(x=>x.id===id);if(!c)return;
+  const level=prompt('等级（S/A/B/C）：',c.level);if(!level)return;
+  const nextAction=prompt('下一步动作：',c.nextAction||'');
+  const lastDate=prompt('上次互动日期：',c.lastDate);
+  c.level=level.toUpperCase();c.nextAction=nextAction||'';c.lastDate=lastDate||c.lastDate;
+  Store.set('clients',clients);renderClients();toast('已更新');
+}
+function delClient(id){
+  if(!confirm('删除这个客户？'))return;
+  let c=Store.get('clients',[]);c=c.filter(x=>x.id!==id);Store.set('clients',c);renderClients();
+}
+
+/* ---- 私域维系方法论 ---- */
+function renderPrivateDomainGuide(){
+  const div=$('#privateDomainGuide');if(!div)return;
+  div.innerHTML=`
+    <div style="font-size:15px;line-height:2">
+      <div class="section-title">📌 加上好友后第一周（破冰期）</div>
+      <div style="padding:12px;background:#F0FDFA;border-radius:8px;margin-bottom:10px;border-left:4px solid var(--primary)">
+        <b>Day 1</b>：发自我介绍+问对方基本情况（学历/预算/目标）<br>
+        <b>Day 2</b>：根据情况发1-2条针对性内容（不硬推）<br>
+        <b>Day 3-7</b>：不主动私聊，但朋友圈开始发价值内容，让对方看到你
+      </div>
+
+      <div class="section-title">📌 第2-4周（养熟期）</div>
+      <div style="padding:12px;background:#FFFBEB;border-radius:8px;margin-bottom:10px;border-left:4px solid #F59E0B">
+        <b>每3天</b>：朋友圈发1条跟对方情况相关的内容（对方会看到）<br>
+        <b>每周</b>：私聊1次，但不推销——"看到X新闻，跟你说一下"/"你之前问的X我整理了"<br>
+        <b>关键</b>：让对方觉得你在"帮他"而不是"卖他"
+      </div>
+
+      <div class="section-title">📌 1个月后（促活期）</div>
+      <div style="padding:12px;background:#FEE2E2;border-radius:8px;margin-bottom:10px;border-left:4px solid #EF4444">
+        <b>如果对方完全沉默</b>：发一条"限时名额/福利"朋友圈，制造紧迫感<br>
+        <b>如果对方有互动</b>：私聊推进——"要不我帮你做个免费方案？"<br>
+        <b>如果对方在犹豫</b>：发同批次学生的真实进度，制造"别人都在走"的从众感
+      </div>
+
+      <div class="section-title">📌 朋友圈发什么不会被屏蔽</div>
+      <div style="padding:12px;background:#DBEAFE;border-radius:8px;margin-bottom:10px;border-left:4px solid #3B82F6">
+        <b>70% 价值内容</b>：费用/科普/避坑/对比/冷知识——让人觉得"留着有用"<br>
+        <b>20% 真实生活</b>：工作日常/明斯克实拍/学生反馈——让人觉得"你是真人"<br>
+        <b>10% 软广</b>：名额/福利/限时——不招烦但能促成交<br>
+        <b>❌ 绝不发</b>：纯广告刷屏/早安晚安鸡汤/虚假承诺
+      </div>
+
+      <div class="section-title">📌 客户分层跟进节奏</div>
+      <div style="padding:12px;background:#F8FAFC;border-radius:8px;border-left:4px solid var(--text-gray)">
+        <b style="color:#991B1B">S级（近期要成交）</b>：每2天私聊1次，发同批次进度，制造紧迫感<br>
+        <b style="color:#92400E">A级（在考虑）</b>：每周私聊1次，发针对性案例，不催<br>
+        <b style="color:#1E40AF">B级（刚加/沉默）</b>：不私聊，靠朋友圈触达，等对方主动<br>
+        <b style="color:#065F46">C级（已成交）</b>：偶尔发问候，维护关系，等转介绍
+      </div>
+    </div>
+  `;
 }
 
 /* ============ 5. 备忘录 ============ */
