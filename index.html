@@ -459,6 +459,7 @@ tbody tr:hover{background:#F8FAFC}
       <button class="nav-item active" data-page="plan"><span class="icon">📋</span>每日计划</button>
       <button class="nav-item" data-page="inspire"><span class="icon">💡</span>选题每日灵感</button>
       <button class="nav-item" data-page="hot"><span class="icon">🎬</span>爆款视频分析库</button>
+      <button class="nav-item" data-page="method"><span class="icon">🧠</span>中介方法论</button>
       <button class="nav-item" data-page="review"><span class="icon">📊</span>内容复盘</button>
       <button class="nav-item" data-page="moments"><span class="icon">🌍</span>发朋友圈</button>
       <button class="nav-item" data-page="memo"><span class="icon">📝</span>备忘录</button>
@@ -549,6 +550,7 @@ const PAGES = {
   plan:    {title:'每日计划', sub:'今日待办与周进度', render:renderPlan},
   inspire: {title:'选题每日灵感', sub:'灵感速记 · 爆款选题库', render:renderInspire},
   hot:     {title:'爆款视频分析库', sub:'拆解爆款 · 借鉴复用', render:renderHot},
+  method:  {title:'中介方法论', sub:'英美澳中介套路 · 你怎么用', render:renderMethod},
   review:  {title:'内容复盘', sub:'作品数据与优化方向', render:renderReview},
   moments: {title:'发朋友圈', sub:'留学中介朋友圈运营', render:renderMoments},
   memo:    {title:'备忘录', sub:'随笔 · 归档 · 清单', render:renderMemo},
@@ -839,7 +841,6 @@ function renderHot(root){
         <button class="hot-tab" data-cat="edu">📚 教育爆款</button>
         <button class="hot-tab" data-cat="lowcost">💰 低成本留学</button>
         <button class="hot-tab" data-cat="teach">🎓 教做视频</button>
-        <button class="hot-tab" data-cat="peer">👁 同行可借鉴</button>
       </div>
 
       <!-- 粘贴链接分析器 -->
@@ -852,7 +853,6 @@ function renderHot(root){
             <option value="edu">📚 教育爆款</option>
             <option value="lowcost">💰 低成本留学</option>
             <option value="teach">🎓 教做视频</option>
-            <option value="peer">👁 同行可借鉴</option>
           </select>
           <input class="input" id="hotAnalyzeTitle" placeholder="视频标题（可选）" style="flex:1">
           <button class="btn btn-primary" onclick="analyzeHotVideo()">🔍 分析</button>
@@ -936,8 +936,78 @@ function delTopic(id){
   let topics=Store.get('topics',[]);topics=topics.filter(x=>x.id!==id);Store.set('topics',topics);renderTopicList();
 }
 
+
+/* ============ 中介方法论（独立栏目） ============ */
+function renderMethod(root){
+  root.innerHTML=`
+    <div class="card" style="position:relative">
+      <div class="watermark">🧠</div>
+      <div class="card-header">
+        <div class="card-title"><span class="icon">🧠</span>中介方法论</div>
+        <span class="muted">英美澳中介套路 · 你白俄业务怎么用</span>
+      </div>
+      <p class="muted" style="margin-bottom:14px;font-size:13px;line-height:1.7">这里拆解的是<b>英美澳留学中介验证过有效的方法论</b>，不看播放量，看转化率。每条三段式：<b>原套路 → 通用逻辑 → 你怎么用</b>。直接套到你的白俄/哈国业务。</p>
+      <div class="hot-tabs" id="methodTabs">
+        <button class="method-tab hot-tab active" data-type="copy">📝 文案话术</button>
+        <button class="method-tab hot-tab" data-type="traffic">📈 引流策略</button>
+        <button class="method-tab hot-tab" data-type="convert">💰 高转化案例</button>
+        <button class="method-tab hot-tab" data-type="story">🎁 学员故事</button>
+      </div>
+      <div id="methodList"></div>
+    </div>
+  `;
+  bindMethodTabs();renderMethodList();
+}
+function bindMethodTabs(){
+  $$('.method-tab').forEach(t=>{
+    t.onclick=function(){
+      $$('.method-tab').forEach(x=>x.classList.remove('active'));
+      this.classList.add('active');
+      renderMethodList();
+    };
+  });
+}
+function renderMethodList(){
+  const list=$('#methodList');if(!list)return;
+  const type=$('.method-tab.active')?.dataset.type||'copy';
+  const all=PRESET_METHODS.filter(m=>m.type===type);
+  if(!all.length){list.innerHTML=`<div class="empty"><span class="icon">🧠</span>这个分类还没有方法论</div>`;return;}
+  list.innerHTML=all.map(m=>`
+    <div class="hot-video-item">
+      <div class="hv-head" onclick="this.nextElementSibling.classList.toggle('open')">
+        <div style="flex:1;min-width:0">
+          <div class="flex" style="gap:8px;flex-wrap:wrap">
+            <span class="pill green">${METHOD_TYPES[m.type]||m.type}</span>
+            <b style="font-size:14px">${esc(m.title)}</b>
+          </div>
+        </div>
+        <span style="font-size:18px;color:var(--text-light)">▾</span>
+      </div>
+      <div class="hv-body">
+        <div class="analyze-dim">
+          <div class="dim-label">🎭 原套路（英美澳中介怎么做的）</div>
+          <div class="dim-text">${esc(m.original)}</div>
+        </div>
+        <div class="analyze-dim">
+          <div class="dim-label">🧠 通用逻辑（为什么有效）</div>
+          <div class="dim-text">${esc(m.logic)}</div>
+        </div>
+        <div class="analyze-dim">
+          <div class="dim-label">🎯 你白俄/哈国业务怎么用</div>
+          <div class="dim-text">${esc(m.apply)}</div>
+        </div>
+        ${(m.link||m.source)?`
+        <div style="margin-top:14px;padding-top:14px;border-top:1px dashed var(--border)">
+          ${m.link?`<div class="analyze-dim"><div class="dim-label">🔗 参考链接</div><div class="dim-text"><a href="${esc(m.link)}" target="_blank" style="color:var(--primary);word-break:break-all">${esc(m.link)}</a></div></div>`:''}
+          ${m.source?`<div class="analyze-dim"><div class="dim-label">📄 参考说明</div><div class="dim-text" style="background:#FFFBEB;padding:10px;border-radius:8px;border-left:3px solid #FBBF24;white-space:pre-wrap">${esc(m.source)}</div></div>`:''}
+        </div>`:''}
+      </div>
+    </div>
+  `).join('');
+}
+
 /* ============ 爆款视频分析库 - 数据与分析逻辑 ============ */
-const HOT_CATS={daily:'🔥 每日爆款',edu:'📚 教育爆款',lowcost:'💰 低成本留学',teach:'🎓 教做视频',peer:'👁 同行可借鉴'};
+const HOT_CATS={daily:'🔥 每日爆款',edu:'📚 教育爆款',lowcost:'💰 低成本留学',teach:'🎓 教做视频'};
 
 // 预埋已拆解的爆款案例（真实可参考的拆解模板）
 const PRESET_HOT_VIDEOS=[
@@ -1032,10 +1102,14 @@ const PRESET_HOT_VIDEOS=[
     structure:'3秒结果钩子→15秒常见误区(为什么你不涨粉)→25秒核心方法(选题/钩子/节奏)→10秒执行清单→5秒关注引导',
     reuse:'可复用：用"数字结果+秘密"句式做你自己的内容——"一条朋友圈转化3个客户的秘密""10个月毕业的硕士怎么选"；每条都带具体数字'
   },
-  /* ===== 同行可借鉴（英美澳中介三段式拆解） ===== */
-  // 文案/话术拆解
-  {
-    cat:'peer',title:'英美中介的"信息差焦虑"文案套路',
+
+];
+
+/* ============ 中介方法论数据（英美澳中介三段式拆解） ============ */
+const METHOD_TYPES={copy:'📝 文案话术',traffic:'📈 引流策略',convert:'💰 高转化案例',story:'🎁 学员故事'};
+const PRESET_METHODS=[
+{
+    cat:'peer',type:'copy',title:'英美中介的"信息差焦虑"文案套路',
     link:'https://www.douyin.com/video/7634439589846912292',
     source:'原类型参考：抖音搜「留学中介不会告诉你」「留学中介避坑」可找到大量英美中介的同类文案。套路：制造对立+自爆内幕建立信任。',
     platform:'小红书',author:'英美中介同行',plays:'',likes:'',fans:'',
@@ -1044,7 +1118,7 @@ const PRESET_HOT_VIDEOS=[
     apply:'你白俄业务直接套：发《白俄留学中介不会告诉你的3件事》——①不收中介费的学校有哪些②英语授课项目其实不用学俄语③包录取的真相是面试培训而非暗箱。把你"一手中介"的身份当成"自爆内幕"的信任背书，反差感更强。'
   },
   {
-    cat:'peer',title:'案例包装的话术结构',
+    cat:'peer',type:'copy',title:'案例包装的话术结构',
     link:'',
     source:'原类型参考：任何英美中介朋友圈都在用这套结构——背景(低)→难点→我们做了什么→结果(高)→感悟。搜「留学 offer案例」可找到真实样本。',
     platform:'朋友圈',author:'英美中介同行',plays:'',likes:'',fans:'',
@@ -1052,9 +1126,8 @@ const PRESET_HOT_VIDEOS=[
     logic:'反差叙事 = 低起点 + 高结果。人脑天然偏爱"逆袭故事"，比纯晒offer多了情感投射空间。加"我们做了什么"是为了把功劳归因到自己身上，证明服务价值。',
     apply:'你白俄案例直接套：背景"中专毕业奶茶店打工"→难点"专升本卷不动+学历自卑"→我们做了什么"14个月专升本+英语授课+面试培训"→结果"明斯克读本科，一年4万"→感悟"学历不是终点是入口"。你的一手渠道身份在"我们做了什么"环节更有说服力——直接对接学校，没有中间商。'
   },
-  // 引流策略拆解
   {
-    cat:'peer',title:'英美中介的"问题清单"引流法',
+    cat:'peer',type:'traffic',title:'英美中介的"问题清单"引流法',
     link:'',
     source:'原类型参考：小红书搜「留学前必须想清楚的问题」「留学清单」可找到大量清单体引流文案。套路：自我筛选+免费咨询钩子。',
     platform:'小红书',author:'英美中介同行',plays:'',likes:'',fans:'',
@@ -1063,7 +1136,7 @@ const PRESET_HOT_VIDEOS=[
     apply:'你白俄业务直接套：发《低预算留学必须问自己的5个问题》——①一年预算能不能压到5万以内②能不能接受英语授课不学俄语③要不要免语言成绩免绩点④能接受10个月硕士还是14个月专升本⑤愿不愿意去白俄/哈国。全中的扣1，你的一手中介身份+透明费用就是最佳转化点。'
   },
   {
-    cat:'peer',title:'英美中介的"成本对比图"引流',
+    cat:'peer',type:'traffic',title:'英美中介的"成本对比图"引流',
     link:'',
     source:'原类型参考：小红书搜「留学费用对比」「国内三本vs留学」可找到对比图引流案例。套路：视觉化对比+站队互动。',
     platform:'小红书',author:'英美中介同行',plays:'',likes:'',fans:'',
@@ -1071,9 +1144,8 @@ const PRESET_HOT_VIDEOS=[
     logic:'对比图降低了决策门槛——把抽象的"值不值"变成可看见的数字。A vs B 的框架还会激发站队心理，评论互动拉满，算法推流。',
     apply:'你白俄业务这个套路天然适配：做《国内三本4年15万 vs 白俄硕士10个月4万》对比图，加上"文凭都认证、回国都考编"——你的成本优势比英美更碾压。再把"一手中介无中间商"做成对比图第二个卖点：同行收2万中介费 vs 你一手直对接收多少。'
   },
-  // 高转化案例拆解
   {
-    cat:'peer',title:'高转化案例：一条朋友圈带来7个咨询',
+    cat:'peer',type:'convert',title:'高转化案例：一条朋友圈带来7个咨询',
     link:'',
     source:'原类型参考：留学中介朋友圈高转化公式——情绪开头→真实故事→服务介入→结果展示→软号召。搜「留学中介 朋友圈文案」可找到真实样本。',
     platform:'朋友圈',author:'英美中介同行',plays:'',likes:'',fans:'',
@@ -1082,7 +1154,7 @@ const PRESET_HOT_VIDEOS=[
     apply:'你白俄业务直接套这条公式：情绪开头"今天有个中专毕业的孩子跟我说不想一辈子打工"→故事"他专升本卷不动"→介入"我帮他申了白俄14个月专升本"→结果"现在明斯克读本科一年4万"→号召"觉得自己卡住的私我"。你的一手身份让"介入"环节更可信——直接对接学校，不是二道贩子。'
   },
   {
-    cat:'peer',title:'高转化案例：评论区变私域的钩子设计',
+    cat:'peer',type:'convert',title:'高转化案例：评论区变私域的钩子设计',
     link:'',
     source:'原类型参考：小红书留学账号评论区常见钩子——「扣背景免费估区间」。搜「留学 评论区 引流」可找到案例。',
     platform:'小红书',author:'英美中介同行',plays:'',likes:'',fans:'',
@@ -1090,9 +1162,8 @@ const PRESET_HOT_VIDEOS=[
     logic:'直接要微信触发平台风控+用户防备。"扣背景免费估区间"给了用户一个"占便宜"的理由主动暴露需求，咨询师再私信承接，转化率比硬引流高3-5倍。',
     apply:'你白俄业务直接套：结尾固定"评论区发你的学历+预算，我帮你看看白俄/哈国哪个学校能申"。你的一手身份让你能给"精准判断能不能申"——这是二道贩子给不了的，正好成为你最强的评论区钩子。'
   },
-  // 学员故事包装
   {
-    cat:'peer',title:'英美中介怎么包装"学员故事"最大化信任',
+    cat:'peer',type:'story',title:'英美中介怎么包装"学员故事"最大化信任',
     link:'',
     source:'原类型参考：英美中介学员故事三件套——化名+真实细节、学员原话引用、录取/反馈截图。搜「留学学员案例」可找到真实样本。',
     platform:'多平台',author:'英美中介同行',plays:'',likes:'',fans:'',
@@ -1101,7 +1172,7 @@ const PRESET_HOT_VIDEOS=[
     apply:'你白俄业务直接套：写"小张(化名)，河南某中专毕业"→引用他原话"老师，我不想一辈子在奶茶店"→附白俄罗斯国立大学录取截图+他给你的微信反馈截图。你的一手中介身份让你能拿到更一手的学生素材——接机视频、宿舍实拍、当地老师探望，这些都是二道贩子拿不到的独家信任素材。'
   },
   {
-    cat:'peer',title:'学员故事的"前后对比"包装法',
+    cat:'peer',type:'story',title:'学员故事的"前后对比"包装法',
     link:'',
     source:'原类型参考：留学中介 before/after 对比包装——留学前(迷茫/打工)vs 留学后(自信/读研)。搜「留学改变命运」「留学逆袭」可找到案例。',
     platform:'多平台',author:'英美中介同行',plays:'',likes:'',fans:'',
