@@ -1431,8 +1431,120 @@ function renderLaunch(root){
       </div>
       <div id="launchRecordsEmpty"></div>
     </div>
+
+    <!-- 拆解思维训练器 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">🧩</span>拆解思维训练器</div>
+        <span class="muted">看到任何好内容都能拆出可借鉴点</span>
+      </div>
+      <p style="font-size:15px;line-height:1.8;margin-bottom:14px">看别人做得好但找不到自己能用的点？用这 <b>4 个问题</b> 拆任何视频，就能找到契合点：</p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
+        <div style="padding:12px;background:#FEF3C7;border-radius:8px;border-left:4px solid #F59E0B;font-size:15px;line-height:1.7">
+          <b>Q1：表面在拍什么？</b><br>
+          <span class="muted">比如丁郑美子表面在拍"舞蹈生的高光时刻"</span>
+        </div>
+        <div style="padding:12px;background:#F0FDFA;border-radius:8px;border-left:4px solid var(--primary);font-size:15px;line-height:1.7">
+          <b>Q2：底层逻辑是什么？</b><br>
+          <span class="muted">拆掉舞蹈外壳 → 底层是"先炫耀→翻车→真本事证明"的叙事弧线</span>
+        </div>
+        <div style="padding:12px;background:#DBEAFE;border-radius:8px;border-left:4px solid #3B82F6;font-size:15px;line-height:1.7">
+          <b>Q3：这个逻辑跟我的业务有什么关系？</b><br>
+          <span class="muted">中介也会逞强→翻车→补救 → "他说闭眼能搞定签证→材料被退→熬夜重做→学生录取"</span>
+        </div>
+        <div style="padding:12px;background:#D1FAE5;border-radius:8px;border-left:4px solid var(--success);font-size:15px;line-height:1.7">
+          <b>Q4：我怎么套到我的人设里？</b><br>
+          <span class="muted">你是中介对象视角 → "他又在吹牛说简单→结果搞砸了→我拍他狼狈重做的样子"</span>
+        </div>
+      </div>
+      <div style="padding:14px;background:#F8FAFC;border-radius:8px;font-size:14px;line-height:1.8">
+        <b>💡 核心心法</b>：别看别人拍的是什么（跳舞/做饭/化妆），看<b>底层结构</b>是什么（逞强翻车 / 先抑后扬 / 反差对比 / 嘴替吐槽）。结构是通用的，内容是你自己的。
+      </div>
+    </div>
+
+    <!-- 示范：丁郑美子拆解 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">📝</span>示范拆解：@丁郑美子 → 你的契合点</div>
+        <span class="muted">看一遍就会了</span>
+      </div>
+      <p style="font-size:15px;line-height:1.8;margin-bottom:14px">
+        @丁郑美子 440万粉，一人分饰老师+学生演舞蹈生日常。表面看跟你中介业务毫无关系，但拆到底层逻辑，<b>3 个套路你全都能用</b>：
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>她做的</th><th>表面看跟你无关</th><th>拆到底层逻辑</th><th>你怎么用</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>一人分饰老师+学生</td>
+              <td>你不会跳舞</td>
+              <td>一个人演两个有权力差的角色，反差感</td>
+              <td>你一人分饰"中介对象"+"来咨询的家长"，演家长问问题你无奈又耐心回答</td>
+            </tr>
+            <tr>
+              <td>高光时刻→打脸→真高光</td>
+              <td>这是舞蹈场景</td>
+              <td>先炫耀→翻车→真本事证明的叙事弧线</td>
+              <td>"他跟朋友吹自己多专业→回家发现材料填错→熬夜重做→学生录取了"</td>
+            </tr>
+            <tr>
+              <td>"装杯"系列（逞强然后翻车）</td>
+              <td>装的是舞蹈能力</td>
+              <td>逞强→翻车是万能搞笑公式</td>
+              <td>"他说闭着眼搞定签证→结果材料被退→你拍他重做的狼狈样"</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top:14px;padding:14px;background:#FFFBEB;border-radius:8px;font-size:14px;line-height:1.8;color:#92400E">
+        <b>看出来了吗？</b>表面她跳舞你没关系，拆到底层逻辑全是你的。<b>这就是"找契合点"——不是找内容相似，是找结构相似。</b>
+      </div>
+    </div>
+
+    <!-- 你的拆解练习本 -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">✏️</span>我的拆解练习本</div>
+        <button class="btn btn-primary btn-sm" onclick="addMyAnalysis()">➕ 拆一个</button>
+      </div>
+      <p class="muted" style="margin-bottom:14px;font-size:14px">看到好内容就用 4 个问题拆一拆，存进来。拆多了思维就练出来了。</p>
+      <div id="myAnalysisList"></div>
+    </div>
   `;
-  renderCalendar(weekPlan);renderShotList();renderLaunchRecords();
+  renderCalendar(weekPlan);renderShotList();renderLaunchRecords();renderMyAnalysis();
+}
+function addMyAnalysis(){
+  const acc=prompt('哪个账号的视频？','@账号名')||'';if(!acc)return;
+  const surface=prompt('Q1 表面在拍什么？','')||'';
+  const logic=prompt('Q2 底层逻辑是什么？（拆掉内容外壳）','')||'';
+  const relate=prompt('Q3 跟我的业务有什么关系？','')||'';
+  const apply=prompt('Q4 我怎么套到我的人设里？','')||'';
+  const list=Store.get('my_analysis',[]);
+  list.push({id:uid(),acc,surface,logic,relate,apply,time:new Date().toLocaleDateString()});
+  Store.set('my_analysis',list);renderMyAnalysis();toast('已拆解保存 ✅');
+}
+function renderMyAnalysis(){
+  const list=$('#myAnalysisList');if(!list)return;
+  const data=Store.get('my_analysis',[]);
+  if(!data.length){list.innerHTML=`<div class="empty"><span class="icon">✏️</span>还没拆过，看到一个好视频就来拆一个</div>`;return;}
+  list.innerHTML=data.slice().reverse().map(a=>`
+    <div style="border:1.5px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px">
+      <div class="flex-between" style="margin-bottom:10px">
+        <b style="font-size:16px">🎬 ${esc(a.acc)}</b>
+        <div class="flex"><span class="muted">${esc(a.time)}</span><button class="btn-icon" onclick="delMyAnalysis('${a.id}')">🗑</button></div>
+      </div>
+      <div style="font-size:14px;line-height:1.9">
+        <div><b style="color:#92400E">Q1 表面：</b>${esc(a.surface)}</div>
+        <div><b style="color:var(--primary-dark)">Q2 底层逻辑：</b>${esc(a.logic)}</div>
+        <div><b style="color:#1E40AF">Q3 跟我关系：</b>${esc(a.relate)}</div>
+        <div><b style="color:#065F46">Q4 我怎么用：</b>${esc(a.apply)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+function delMyAnalysis(id){
+  if(!confirm('删除这条拆解？'))return;
+  let d=Store.get('my_analysis',[]);d=d.filter(x=>x.id!==id);Store.set('my_analysis',d);renderMyAnalysis();
 }
 
 const CALENDAR=[
