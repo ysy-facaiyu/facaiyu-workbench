@@ -144,6 +144,19 @@ ul{list-style:none}
 .page-title{font-size:20px;font-weight:700;color:var(--text-dark)}
 .page-sub{font-size:12px;color:var(--text-gray);margin-top:2px}
 .topbar-right{display:flex;align-items:center;gap:12px}
+.refresh-btn{
+  width:36px;height:36px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#F0FDFA,#CCFBF1);
+  color:var(--primary-dark);
+  font-size:18px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;
+  flex-shrink:0;
+  line-height:1;
+}
+.refresh-btn:hover{background:var(--primary);color:#fff;transform:rotate(180deg)}
+.refresh-btn:active{transform:scale(.9)}
 .date-chip{
   background:linear-gradient(135deg,#F0FDFA,#CCFBF1);
   color:var(--primary-dark);
@@ -470,6 +483,7 @@ tbody tr:hover{background:#F8FAFC}
         </div>
       </div>
       <div class="topbar-right">
+        <button class="refresh-btn" onclick="location.reload()" title="刷新页面">↻</button>
         <div class="date-chip" id="dateChip"><span class="cal-icon" style="font-style:normal">🗓</span><span id="dateChipText">加载中...</span></div>
       </div>
     </header>
