@@ -442,7 +442,38 @@ tbody tr:hover{background:#F8FAFC}
 .pill.green{background:#D1FAE5;color:#065F46}
 .pill.orange{background:#FEF3C7;color:#92400E}
 .pill.blue{background:#DBEAFE;color:#1E40AF}
+/* 本职工作模块 */
+.work-tabs{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+.work-tab{padding:8px 18px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:15px;font-weight:600;color:var(--text-gray);cursor:pointer;transition:all .2s}
+.work-tab.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.work-tab:hover:not(.active){border-color:var(--primary);color:var(--primary)}
+.train-item{padding:14px 16px;background:#F8FAFC;border-radius:12px;margin-bottom:10px;border-left:4px solid var(--primary);transition:all .2s}
+.train-item:hover{background:#F1F5F9;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.train-item.expanded{background:#fff;border-left-color:var(--accent)}
+.train-highlight{padding:8px 12px;border-radius:8px;margin:6px 0;font-size:15px;line-height:1.6;display:flex;gap:8px;align-items:flex-start}
+.flashcard{background:linear-gradient(135deg,#fff,#F8FAFC);border:1.5px solid var(--border);border-radius:14px;padding:18px;margin-bottom:10px;cursor:pointer;transition:all .3s;position:relative;min-height:80px}
+.flashcard:hover{box-shadow:var(--shadow)}
+.flashcard .fc-q{font-size:15px;font-weight:600;color:var(--text-dark)}
+.flashcard .fc-a{font-size:14px;color:var(--text-gray);margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);display:none}
+.flashcard.flipped .fc-a{display:block}
+.flashcard.flipped .fc-q{color:var(--primary)}
+.fc-status{display:flex;gap:6px;margin-top:10px}
+.fc-status button{padding:4px 10px;border-radius:8px;font-size:13px;border:1px solid var(--border);background:#fff;cursor:pointer}
+.fc-status button.active.mastered{background:#D1FAE5;color:#065F46;border-color:#6EE7B7}
+.fc-status button.active.review{background:#FEF3C7;color:#92400E;border-color:#FCD34D}
+.fc-status button.active.unsure{background:#FEE2E2;color:#991B1B;border-color:#FCA5A5}
+.exam-item{padding:14px 16px;border-radius:12px;margin-bottom:10px;border-left:4px solid var(--primary);transition:all .2s;background:#F8FAFC}
+.exam-item.high{border-left-color:#EF4444}
+.exam-item.mid{border-left-color:#F59E0B}
+.exam-item.low{border-left-color:#6366F1}
+.exam-item:hover{box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.ocr-loading{display:flex;align-items:center;gap:10px;padding:14px;background:#FEF3C7;border-radius:10px;margin-bottom:10px;font-size:14px;color:#92400E}
+.ocr-loading .spinner{width:20px;height:20px;border:2.5px solid #FCD34D;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.import-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 16px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;border:1.5px dashed var(--border);background:#fff;color:var(--text-gray);transition:all .2s}
+.import-btn:hover{border-color:var(--primary);color:var(--primary);background:#F0FDFA}
 </style>
+<script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
 </head>
 <body>
 <div class="app">
@@ -464,6 +495,7 @@ tbody tr:hover{background:#F8FAFC}
       <button class="nav-item" data-page="moments"><span class="icon">🌍</span>发朋友圈</button>
       <button class="nav-item" data-page="memo"><span class="icon">📝</span>备忘录</button>
       <button class="nav-item" data-page="fitness"><span class="icon">💪</span>健身打卡</button>
+      <button class="nav-item" data-page="work"><span class="icon">💼</span>本职工作</button>
     </nav>
     <div class="sidebar-footer">
       <span><span class="cloud-dot"></span>本地已同步</span>
@@ -517,7 +549,7 @@ const Store = {
   exportAll(){
     const data = {};
     ['plan_todos','plan_history','inspires','topics','reviews','moments_tasks','moments_lib',
-     'memos_notes','memos_accounts','memos_shopping','fitness_records','fitness_body','fitness_diet'].forEach(k=>{
+     'memos_notes','memos_accounts','memos_shopping','fitness_records','fitness_body','fitness_diet','work_trainings','work_exams'].forEach(k=>{
       data[k] = Store.get(k, null);
     });
     return data;
@@ -555,6 +587,7 @@ const PAGES = {
   moments: {title:'发朋友圈', sub:'留学中介朋友圈运营', render:renderMoments},
   memo:    {title:'备忘录', sub:'随笔 · 归档 · 清单', render:renderMemo},
   fitness: {title:'健身打卡', sub:'训练记录与身体数据', render:renderFitness},
+  work:    {title:'本职工作', sub:'培训学习 · 考核要点 · 记忆闪卡', render:renderWork},
 };
 
 function switchPage(key){
@@ -2508,6 +2541,491 @@ window.addEventListener('error',function(e){
   if(t){t.textContent='⚠️ 发生小问题：'+e.message;t.classList.add('show');
     setTimeout(()=>t.classList.remove('show'),3000);}
 });
+
+/* ============ 7. 本职工作：培训学习 + 考核注意 ============ */
+
+// 分析规则
+const TRAIN_RULES = {
+  highlight: [
+    {kw:['必须','重点','核心','关键','务必','一定','切记'], tag:'重点', cls:'tag-hot', icon:'🔴'},
+    {kw:['定义','是指','概念','含义','叫做','指的是'], tag:'定义', cls:'tag-mid', icon:'🔵'},
+    {kw:['流程','步骤','程序','环节','顺序','先后'], tag:'流程', cls:'tag-richang', icon:'🟡'},
+    {kw:['条件','要求','资格','标准','门槛','前提'], tag:'条件', cls:'tag-yanzhi', icon:'🟣'},
+    {kw:['注意','容易','易错','区别','不要','避免','禁止'], tag:'易考', cls:'tag-tucao', icon:'⚠️'},
+    {kw:['数据','比例','金额','时间','期限','日期','费用','元','%'], tag:'数据', cls:'tag-ganhuo', icon:'📊'},
+  ],
+  questionPatterns: [
+    {kw:['定义','是指','概念','含义'], template:(s)=>`请复述以下概念的准确定义：${s.slice(0,50)}`},
+    {kw:['流程','步骤','程序','环节'], template:(s)=>`请描述以下流程的完整步骤：${s.slice(0,50)}`},
+    {kw:['条件','要求','资格','标准','前提'], template:(s)=>`以下事项的具体条件/要求是什么？${s.slice(0,50)}`},
+    {kw:['注意','易错','避免','禁止'], template:(s)=>`以下内容中需要注意什么？${s.slice(0,50)}`},
+    {kw:['数据','比例','金额','期限','费用'], template:(s)=>`请准确说出以下数据：${s.slice(0,50)}`},
+  ]
+};
+
+// 预置示例
+const PRESET_TRAININGS = [
+  {
+    id:'preset_train_1',
+    title:'示例：白俄留学申请材料清单',
+    source:'培训手册',
+    date:'2025-01-15',
+    content:'白俄留学申请必须准备以下材料：\n1. 护照原件及复印件（有效期至少6个月）\n2. 最高学历证书及成绩单（需公证+双认证）\n3. 出生证明（需公证+双认证）\n4. 健康证明（体检报告，含HIV检测）\n5. 照片8张（白底2寸）\n\n注意：双认证流程大约需要15-20个工作日，务必提前办理。成绩单公证时必须翻译成俄语或英语。\n\n核心条件：申请硕士需要本科学历，申请本科需要高中毕业证。跨专业申请需要提前确认目标院校是否接受。',
+    highlights:[],
+    flashcards:[]
+  }
+];
+const PRESET_EXAMS = [
+  {
+    id:'preset_exam_1',
+    title:'示例：客户咨询常见提问',
+    content:'1. 白俄安全吗？——回答要点：首都明斯克治安良好，大学城区域安全\n2. 学历回国认认证吗？——必须强调：教育部涉外监管网可查院校，回国可认证\n3. 语言不通怎么办？——回答：英语授课项目无需俄语基础，日常生活有中文辅导员\n4. 费用多少？——白俄年总费用6-8万（学费+生活费）',
+    date:'2025-01-15',
+    importance:'high',
+    status:''
+  }
+];
+
+function renderWork(root){
+  // 初始化预置数据
+  if(!Store.get('work_trainings',null)){
+    Store.set('work_trainings', PRESET_TRAININGS);
+    // 预置数据也做分析
+    const t=PRESET_TRAININGS[0];
+    const analysis=analyzeTraining(t.content);
+    t.highlights=analysis.highlights;
+    t.flashcards=analysis.flashcards;
+    Store.set('work_trainings', PRESET_TRAININGS);
+  }
+  if(!Store.get('work_exams',null)){
+    Store.set('work_exams', PRESET_EXAMS);
+  }
+
+  root.innerHTML=`
+    <div style="margin-bottom:18px;padding:14px 18px;background:linear-gradient(135deg,#FEF3C7,#FDE68A);border-radius:14px;display:flex;gap:12px;align-items:flex-start">
+      <span style="font-size:28px">💼</span>
+      <div style="flex:1">
+        <div style="font-size:16px;font-weight:700;color:#92400E;margin-bottom:4px">企业微信培训资料 · 学习中心</div>
+        <div style="font-size:14px;color:#78350F;line-height:1.5">
+          从企业微信<b>截图/拍照/复制文字</b> → 粘贴或识别 → 系统自动标注<b>重点·易考·数据</b> → 生成记忆闪卡
+        </div>
+      </div>
+    </div>
+
+    <div class="work-tabs">
+      <button class="work-tab active" id="tab-train" onclick="switchWorkTab('train')">📚 培训学习</button>
+      <button class="work-tab" id="tab-exam" onclick="switchWorkTab('exam')">📋 考核注意</button>
+    </div>
+    <div id="workContent"></div>
+  `;
+  renderTrainTab();
+}
+
+function switchWorkTab(tab){
+  $('#tab-train').classList.toggle('active',tab==='train');
+  $('#tab-exam').classList.toggle('active',tab==='exam');
+  if(tab==='train') renderTrainTab();
+  else renderExamTab();
+}
+
+/* --- 培训学习 --- */
+function renderTrainTab(){
+  const c=$('#workContent');if(!c)return;
+  c.innerHTML=`
+    <!-- 导入区 -->
+    <div class="card" style="margin-bottom:18px;position:relative">
+      <div class="watermark">📖</div>
+      <div class="card-header">
+        <div class="card-title"><span class="icon">➕</span>添加培训文件</div>
+      </div>
+      <div style="margin-bottom:12px">
+        <input class="input" id="trainTitle" placeholder="文件标题（如：白俄申请流程培训）" style="margin-bottom:8px">
+        <input class="input" id="trainSource" placeholder="来源（如：企业微信-培训群/手册第X页）" style="margin-bottom:8px">
+      </div>
+      <textarea class="textarea" id="trainContent" placeholder="粘贴培训文字内容...&#10;支持多段文字，系统会自动分析重点和易考点" style="min-height:120px;margin-bottom:12px"></textarea>
+
+      <!-- 三种导入按钮 -->
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+        <button class="import-btn" onclick="ocrTraining()" style="flex:1;min-width:120px">
+          <span style="font-size:18px">📷</span> 拍照/截图识别
+        </button>
+        <button class="import-btn" onclick="document.getElementById('trainFileInput').click()" style="flex:1;min-width:120px">
+          <span style="font-size:18px">📎</span> 上传.txt文件
+        </button>
+        <input type="file" id="trainFileInput" accept=".txt,.md" style="display:none" onchange="fileToTraining(this)">
+      </div>
+      <div id="ocrStatus"></div>
+
+      <button class="btn btn-primary" onclick="addTraining()" style="width:100%">分析并添加</button>
+    </div>
+
+    <!-- 培训文件列表 -->
+    <div id="trainList"></div>
+  `;
+  renderTrainingList();
+}
+
+function ocrTraining(){
+  // 创建文件选择器
+  const input=document.createElement('input');
+  input.type='file';
+  input.accept='image/*';
+  input.capture='environment';
+  input.onchange=async function(e){
+    const file=e.target.files[0];if(!file)return;
+    const status=$('#ocrStatus');
+    status.innerHTML=`<div class="ocr-loading"><div class="spinner"></div><span>正在识别文字... 大约需要5-15秒</span></div>`;
+
+    try{
+      const worker=await Tesseract.createWorker('chi_sim',1,{
+        logger:m=>{
+          if(m.status==='recognizing text'){
+            status.innerHTML=`<div class="ocr-loading"><div class="spinner"></div><span>识别中... ${Math.round(m.progress*100)}%</span></div>`;
+          }
+        }
+      });
+      const{data:{text}}=await worker.recognize(file);
+      await worker.terminate();
+
+      const cleaned=text.replace(/\n{3,}/g,'\n\n').trim();
+      const ta=$('#trainContent');
+      if(ta.value.trim()) ta.value+='\n\n---识别内容---\n'+cleaned;
+      else ta.value=cleaned;
+
+      status.innerHTML=`<div style="padding:10px;background:#D1FAE5;border-radius:8px;color:#065F46;font-size:14px">✅ 识别完成，共${cleaned.length}字，已填入内容框</div>`;
+      setTimeout(()=>{if(status)status.innerHTML='';},4000);
+    }catch(err){
+      status.innerHTML=`<div style="padding:10px;background:#FEE2E2;border-radius:8px;color:#991B1B;font-size:14px">❌ 识别失败：${err.message}。建议换一张清晰度更高的图片</div>`;
+    }
+  };
+  input.click();
+}
+
+function fileToTraining(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const text=e.target.result;
+    const ta=$('#trainContent');
+    if(ta.value.trim()) ta.value+='\n\n---文件内容---\n'+text;
+    else ta.value=text;
+    toast('✅ 文件已读取，共'+text.length+'字');
+  };
+  reader.readAsText(file,'UTF-8');
+  input.value='';
+}
+
+function analyzeTraining(text){
+  const highlights=[];
+  const flashcards=[];
+  const lines=text.split(/\n/).filter(l=>l.trim());
+
+  lines.forEach(line=>{
+    const trimmed=line.trim();
+    if(trimmed.length<4) return;
+
+    // 检查每个规则
+    TRAIN_RULES.highlight.forEach(rule=>{
+      rule.kw.forEach(kw=>{
+        if(trimmed.includes(kw)){
+          // 避免重复添加同一行
+          if(!highlights.find(h=>h.text===trimmed)){
+            highlights.push({text:trimmed, tag:rule.tag, cls:rule.cls, icon:rule.icon});
+          }
+        }
+      });
+    });
+
+    // 生成闪卡
+    TRAIN_RULES.questionPatterns.forEach(pat=>{
+      pat.kw.forEach(kw=>{
+        if(trimmed.includes(kw)){
+          // 避免重复
+          const q=pat.template(trimmed);
+          if(!flashcards.find(f=>f.q===q)){
+            flashcards.push({id:uid(),q:q,a:trimmed,status:''});
+          }
+        }
+      });
+    });
+  });
+
+  // 如果没有自动识别到闪卡，把每个段落生成一个
+  if(flashcards.length===0&&lines.length>0){
+    lines.slice(0,5).forEach(line=>{
+      if(line.trim().length>10){
+        flashcards.push({id:uid(),q:`请复述以下内容：${line.trim().slice(0,40)}`,a:line.trim(),status:''});
+      }
+    });
+  }
+
+  return {highlights, flashcards};
+}
+
+function addTraining(){
+  const title=$('#trainTitle').value.trim();
+  const source=$('#trainSource').value.trim()||'手动添加';
+  const content=$('#trainContent').value.trim();
+  if(!content){toast('⚠️ 请先输入或导入内容');return;}
+  if(!title){toast('⚠️ 请填写标题');return;}
+
+  const analysis=analyzeTraining(content);
+  const trainings=Store.get('work_trainings',[]);
+  trainings.unshift({
+    id:uid(),
+    title,
+    source,
+    date:todayStr(),
+    content,
+    highlights:analysis.highlights,
+    flashcards:analysis.flashcards
+  });
+  Store.set('work_trainings',trainings);
+
+  $('#trainTitle').value='';
+  $('#trainSource').value='';
+  $('#trainContent').value='';
+  renderTrainingList();
+  toast(`✅ 已添加！识别${analysis.highlights.length}个重点，生成${analysis.flashcards.length}张闪卡`);
+}
+
+function renderTrainingList(){
+  const list=$('#trainList');if(!list)return;
+  const trainings=Store.get('work_trainings',[]);
+  if(!trainings.length){
+    list.innerHTML=`<div class="empty"><span class="icon">📚</span>还没有培训文件<br><small>上方添加或拍照导入</small></div>`;
+    return;
+  }
+  list.innerHTML=trainings.map(t=>`
+    <div class="train-item" id="train-${t.id}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;cursor:pointer" onclick="toggleTraining('${t.id}')">
+        <div style="flex:1">
+          <div style="font-size:17px;font-weight:700;margin-bottom:4px">${esc(t.title)}</div>
+          <div class="muted" style="font-size:13px">${esc(t.source)} · ${t.date}</div>
+          <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
+            ${t.highlights.length?`<span class="tag tag-hot">📌 ${t.highlights.length}个重点</span>`:''}
+            ${t.flashcards.length?`<span class="tag tag-richang">🃏 ${t.flashcards.length}张闪卡</span>`:''}
+            <span class="muted" style="font-size:13px;align-self:center">${t.content.length}字</span>
+          </div>
+        </div>
+        <button class="btn-icon" onclick="event.stopPropagation();delTraining('${t.id}')">🗑</button>
+      </div>
+      <div id="detail-${t.id}" style="display:none;margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
+        ${renderTrainingDetail(t)}
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleTraining(id){
+  const detail=$('#detail-'+id);
+  const item=$('#train-'+id);
+  if(detail.style.display==='none'){
+    detail.style.display='block';
+    item.classList.add('expanded');
+  }else{
+    detail.style.display='none';
+    item.classList.remove('expanded');
+  }
+}
+
+function renderTrainingDetail(t){
+  let html='';
+
+  // 原文
+  html+=`<div style="margin-bottom:16px">
+    <div class="section-title">📄 原文内容</div>
+    <div style="background:#F8FAFC;padding:12px 14px;border-radius:10px;font-size:15px;line-height:1.8;white-space:pre-wrap;max-height:300px;overflow-y:auto">${esc(t.content)}</div>
+  </div>`;
+
+  // 重点标注
+  if(t.highlights.length){
+    html+=`<div style="margin-bottom:16px">
+      <div class="section-title">🎯 自动标注重点（${t.highlights.length}个）</div>
+      ${t.highlights.map(h=>`
+        <div class="train-highlight" style="background:#FFFBEB">
+          <span style="flex-shrink:0">${h.icon}</span>
+          <div><span class="tag ${h.cls}" style="margin-bottom:4px">${h.tag}</span><div style="margin-top:4px;font-size:15px;line-height:1.6">${esc(h.text)}</div></div>
+        </div>
+      `).join('')}
+    </div>`;
+  }
+
+  // 闪卡
+  if(t.flashcards.length){
+    html+=`<div style="margin-bottom:10px">
+      <div class="section-title">🃏 记忆闪卡（${t.flashcards.length}张）·点击翻牌</div>
+      ${t.flashcards.map(fc=>renderFlashcard(fc)).join('')}
+    </div>`;
+  }
+
+  return html;
+}
+
+function renderFlashcard(fc){
+  return `
+    <div class="flashcard ${fc.status?'flipped':''}" id="fc-${fc.id}" onclick="flipCard('${fc.id}')">
+      <div class="fc-q">❓ ${esc(fc.q)}</div>
+      <div class="fc-a">💡 ${esc(fc.a)}</div>
+      <div class="fc-status" onclick="event.stopPropagation()">
+        <button class="${fc.status==='mastered'?'active mastered':''}" onclick="markCard('${fc.id}','mastered')">✅ 已掌握</button>
+        <button class="${fc.status==='review'?'active review':''}" onclick="markCard('${fc.id}','review')">🔄 需复习</button>
+        <button class="${fc.status==='unsure'?'active unsure':''}" onclick="markCard('${fc.id}','unsure')">❓ 没把握</button>
+      </div>
+    </div>
+  `;
+}
+
+function flipCard(id){
+  const card=$('#fc-'+id);if(!card)return;
+  card.classList.toggle('flipped');
+}
+
+function markCard(id,status){
+  const trainings=Store.get('work_trainings',[]);
+  trainings.forEach(t=>{
+    if(t.flashcards){
+      t.flashcards.forEach(fc=>{
+        if(fc.id===id){
+          fc.status=fc.status===status?'':status;
+        }
+      });
+    }
+  });
+  Store.set('work_trainings',trainings);
+  // 只更新这一张卡片
+  trainings.forEach(t=>{
+    if(t.flashcards){
+      const fc=t.flashcards.find(f=>f.id===id);
+      if(fc){
+        const el=$('#fc-'+id);
+        if(el){
+          el.querySelector('.fc-status').innerHTML=`
+            <button class="${fc.status==='mastered'?'active mastered':''}" onclick="markCard('${fc.id}','mastered')">✅ 已掌握</button>
+            <button class="${fc.status==='review'?'active review':''}" onclick="markCard('${fc.id}','review')">🔄 需复习</button>
+            <button class="${fc.status==='unsure'?'active unsure':''}" onclick="markCard('${fc.id}','unsure')">❓ 没把握</button>
+          `;
+        }
+      }
+    }
+  });
+}
+
+function delTraining(id){
+  if(!confirm('删除这个培训文件？'))return;
+  let t=Store.get('work_trainings',[]);
+  t=t.filter(x=>x.id!==id);
+  Store.set('work_trainings',t);
+  renderTrainingList();
+  toast('已删除');
+}
+
+/* --- 考核注意 --- */
+function renderExamTab(){
+  const c=$('#workContent');if(!c)return;
+  c.innerHTML=`
+    <div class="card" style="margin-bottom:18px;position:relative">
+      <div class="watermark">📋</div>
+      <div class="card-header">
+        <div class="card-title"><span class="icon">➕</span>添加考核注意事项</div>
+      </div>
+      <input class="input" id="examTitle" placeholder="考核标题（如：第3季度业务考核-签证流程）" style="margin-bottom:8px">
+      <textarea class="textarea" id="examContent" placeholder="考核中需要注意的内容...&#10;如：容易被问到的点、容易答错的细节、考核标准等" style="min-height:100px;margin-bottom:8px"></textarea>
+      <div style="display:flex;gap:10px;margin-bottom:12px">
+        <select class="select" id="examImportance" style="flex:1">
+          <option value="high">🔴 重要（必考）</option>
+          <option value="mid">🟡 中等（可能考）</option>
+          <option value="low">🔵 低（了解即可）</option>
+        </select>
+        <input class="input" id="examDate" type="date" style="flex:1" value="${todayStr()}">
+      </div>
+      <button class="btn btn-primary" onclick="addExam()" style="width:100%">添加</button>
+    </div>
+    <div id="examList"></div>
+  `;
+  renderExamList();
+}
+
+function addExam(){
+  const title=$('#examTitle').value.trim();
+  const content=$('#examContent').value.trim();
+  const importance=$('#examImportance').value;
+  const date=$('#examDate').value||todayStr();
+  if(!title||!content){toast('⚠️ 标题和内容都要填');return;}
+
+  const exams=Store.get('work_exams',[]);
+  exams.unshift({id:uid(),title,content,date,importance,status:''});
+  Store.set('work_exams',exams);
+  $('#examTitle').value='';
+  $('#examContent').value='';
+  renderExamList();
+  toast('✅ 已添加');
+}
+
+function renderExamList(){
+  const list=$('#examList');if(!list)return;
+  const exams=Store.get('work_exams',[]);
+  if(!exams.length){
+    list.innerHTML=`<div class="empty"><span class="icon">📋</span>还没有考核记录</div>`;
+    return;
+  }
+
+  // 按日期排序（近期的在前）
+  const sorted=exams.slice().sort((a,b)=>b.date.localeCompare(a.date));
+  const today=todayStr();
+
+  list.innerHTML=sorted.map(e=>{
+    const days=Math.ceil((new Date(e.date)-new Date(today))/86400000);
+    let dateLabel=e.date;
+    if(days===0) dateLabel='📅 今天';
+    else if(days>0) dateLabel=`📅 ${e.date}（${days}天后）`;
+    else dateLabel=`📅 ${e.date}（${-days}天前）`;
+
+    const impMap={high:'🔴 重要',mid:'🟡 中等',low:'🔵 低'};
+    const statusMap={'':'⬜ 未标记','mastered':'✅ 已掌握','review':'🔄 需复习','unsure':'❓ 没把握'};
+
+    return `
+      <div class="exam-item ${e.importance}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px">
+          <div style="flex:1">
+            <div style="font-size:17px;font-weight:700">${esc(e.title)}</div>
+            <div style="margin-top:4px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+              <span class="muted" style="font-size:13px">${dateLabel}</span>
+              <span class="tag ${e.importance==='high'?'tag-hot':e.importance==='mid'?'tag-mid':'tag-low'}">${impMap[e.importance]}</span>
+              <span class="muted" style="font-size:13px">${statusMap[e.status]}</span>
+            </div>
+          </div>
+          <button class="btn-icon" onclick="delExam('${e.id}')">🗑</button>
+        </div>
+        <div style="font-size:15px;line-height:1.7;white-space:pre-wrap;padding:10px 12px;background:#fff;border-radius:8px;margin-bottom:10px">${esc(e.content)}</div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-sm ${e.status==='mastered'?'btn-primary':'btn-ghost'}" onclick="markExam('${e.id}','mastered')">✅ 已掌握</button>
+          <button class="btn btn-sm ${e.status==='review'?'btn-primary':'btn-ghost'}" onclick="markExam('${e.id}','review')">🔄 需复习</button>
+          <button class="btn btn-sm ${e.status==='unsure'?'btn-primary':'btn-ghost'}" onclick="markExam('${e.id}','unsure')">❓ 没把握</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function markExam(id,status){
+  let exams=Store.get('work_exams',[]);
+  exams.forEach(e=>{
+    if(e.id===id) e.status=e.status===status?'':status;
+  });
+  Store.set('work_exams',exams);
+  renderExamList();
+}
+
+function delExam(id){
+  if(!confirm('删除这条考核记录？'))return;
+  let e=Store.get('work_exams',[]);
+  e=e.filter(x=>x.id!==id);
+  Store.set('work_exams',e);
+  renderExamList();
+  toast('已删除');
+}
+
 </script>
 </body>
 </html>
