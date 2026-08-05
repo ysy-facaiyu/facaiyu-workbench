@@ -587,7 +587,7 @@ const PAGES = {
   moments: {title:'发朋友圈', sub:'留学中介朋友圈运营', render:renderMoments},
   memo:    {title:'备忘录', sub:'随笔 · 归档 · 清单', render:renderMemo},
   fitness: {title:'健身打卡', sub:'训练记录与身体数据', render:renderFitness},
-  work:    {title:'本职工作', sub:'培训学习 · 考核要点 · 记忆闪卡', render:renderWork},
+  work:    {title:'本职工作', sub:'培训学习 · 违规警示 · 记忆闪卡', render:renderWork},
 };
 
 function switchPage(key){
@@ -2578,10 +2578,20 @@ const PRESET_TRAININGS = [
 const PRESET_EXAMS = [
   {
     id:'preset_exam_1',
-    title:'示例：客户咨询常见提问',
-    content:'1. 白俄安全吗？——回答要点：首都明斯克治安良好，大学城区域安全\n2. 学历回国认认证吗？——必须强调：教育部涉外监管网可查院校，回国可认证\n3. 语言不通怎么办？——回答：英语授课项目无需俄语基础，日常生活有中文辅导员\n4. 费用多少？——白俄年总费用6-8万（学费+生活费）',
+    title:'示例：未在话术中告知客户退款条件',
+    violator:'同事A',
+    content:'客户签约后才发现退费要扣30%违约金，投诉到总部。考核扣5分。\n教训：签约前必须口头告知退费条款，并在合同第3页签字确认。',
     date:'2025-01-15',
-    importance:'high',
+    severity:'high',
+    status:''
+  },
+  {
+    id:'preset_exam_2',
+    title:'示例：朋友圈发承诺性话术被截图',
+    violator:'同事B',
+    content:'发朋友圈写"100%保录取"，被客户截图举报违规承诺。考核扣10分+书面警告。\n教训：朋友圈禁止使用"100%/保录/包过"等绝对化用语。',
+    date:'2025-01-10',
+    severity:'high',
     status:''
   }
 ];
@@ -2597,8 +2607,12 @@ function renderWork(root){
     t.flashcards=analysis.flashcards;
     Store.set('work_trainings', PRESET_TRAININGS);
   }
-  if(!Store.get('work_exams',null)){
-    Store.set('work_exams', PRESET_EXAMS);
+  // 违规警示数据：如果旧数据没有 severity 字段（旧格式），重置为新预置
+  {
+    const oldExams=Store.get('work_exams',null);
+    if(!oldExams || (oldExams.length && !oldExams[0].severity)){
+      Store.set('work_exams', PRESET_EXAMS);
+    }
   }
 
   root.innerHTML=`
@@ -2607,14 +2621,15 @@ function renderWork(root){
       <div style="flex:1">
         <div style="font-size:16px;font-weight:700;color:#92400E;margin-bottom:4px">企业微信培训资料 · 学习中心</div>
         <div style="font-size:14px;color:#78350F;line-height:1.5">
-          从企业微信<b>截图/拍照/复制文字</b> → 粘贴或识别 → 系统自动标注<b>重点·易考·数据</b> → 生成记忆闪卡
+          <b>培训学习</b>：截图/拍照/粘贴 → 自动标注重点 → 生成记忆闪卡<br>
+          <b>违规警示</b>：记录同事违规扣分案例 → 提醒自己别踩同样的坑
         </div>
       </div>
     </div>
 
     <div class="work-tabs">
       <button class="work-tab active" id="tab-train" onclick="switchWorkTab('train')">📚 培训学习</button>
-      <button class="work-tab" id="tab-exam" onclick="switchWorkTab('exam')">📋 考核注意</button>
+      <button class="work-tab" id="tab-exam" onclick="switchWorkTab('exam')">⚠️ 违规警示</button>
     </div>
     <div id="workContent"></div>
   `;
@@ -2920,26 +2935,41 @@ function delTraining(id){
   toast('已删除');
 }
 
-/* --- 考核注意 --- */
+/* --- 违规警示（前车之鉴）--- */
 function renderExamTab(){
   const c=$('#workContent');if(!c)return;
+  // 统计
+  const exams=Store.get('work_exams',[]);
+  const highCount=exams.filter(e=>e.severity==='high').length;
   c.innerHTML=`
-    <div class="card" style="margin-bottom:18px;position:relative">
-      <div class="watermark">📋</div>
-      <div class="card-header">
-        <div class="card-title"><span class="icon">➕</span>添加考核注意事项</div>
+    <div style="margin-bottom:14px;padding:12px 16px;background:linear-gradient(135deg,#FEE2E2,#FECACA);border-radius:12px;display:flex;gap:10px;align-items:center">
+      <span style="font-size:24px">⚠️</span>
+      <div style="flex:1">
+        <div style="font-size:15px;font-weight:700;color:#991B1B">别人踩过的坑，自己别再踩</div>
+        <div style="font-size:13px;color:#7F1D1D">记录同事违规/扣分案例 · 提醒自己避免同样错误</div>
       </div>
-      <input class="input" id="examTitle" placeholder="考核标题（如：第3季度业务考核-签证流程）" style="margin-bottom:8px">
-      <textarea class="textarea" id="examContent" placeholder="考核中需要注意的内容...&#10;如：容易被问到的点、容易答错的细节、考核标准等" style="min-height:100px;margin-bottom:8px"></textarea>
-      <div style="display:flex;gap:10px;margin-bottom:12px">
-        <select class="select" id="examImportance" style="flex:1">
-          <option value="high">🔴 重要（必考）</option>
-          <option value="mid">🟡 中等（可能考）</option>
-          <option value="low">🔵 低（了解即可）</option>
-        </select>
+      <span class="tag tag-hot">⚠️ ${highCount}条高危</span>
+    </div>
+
+    <div class="card" style="margin-bottom:18px;position:relative">
+      <div class="watermark">📝</div>
+      <div class="card-header">
+        <div class="card-title"><span class="icon">➕</span>记录违规案例</div>
+      </div>
+      <input class="input" id="examTitle" placeholder="违规事项（如：未告知客户退款条款）" style="margin-bottom:8px">
+      <div style="display:flex;gap:10px;margin-bottom:8px">
+        <input class="input" id="examViolator" placeholder="违规人（如：同事A / 群里看到的案例）" style="flex:1">
         <input class="input" id="examDate" type="date" style="flex:1" value="${todayStr()}">
       </div>
-      <button class="btn btn-primary" onclick="addExam()" style="width:100%">添加</button>
+      <textarea class="textarea" id="examContent" placeholder="详细描述...&#10;如：什么违规行为、被扣多少分、什么后果&#10;最重要：我的教训/如何避免" style="min-height:100px;margin-bottom:8px"></textarea>
+      <div style="display:flex;gap:10px;margin-bottom:12px">
+        <select class="select" id="examSeverity" style="flex:1">
+          <option value="high">🔴 严重（扣分多/书面警告/影响晋升）</option>
+          <option value="mid">🟡 中等（口头警告/小扣分）</option>
+          <option value="low">🔵 轻微（提醒注意）</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="addExam()" style="width:100%">记录案例</button>
     </div>
     <div id="examList"></div>
   `;
@@ -2948,60 +2978,57 @@ function renderExamTab(){
 
 function addExam(){
   const title=$('#examTitle').value.trim();
+  const violator=$('#examViolator').value.trim()||'未标注';
   const content=$('#examContent').value.trim();
-  const importance=$('#examImportance').value;
+  const severity=$('#examSeverity').value;
   const date=$('#examDate').value||todayStr();
-  if(!title||!content){toast('⚠️ 标题和内容都要填');return;}
+  if(!title||!content){toast('⚠️ 违规事项和描述都要填');return;}
 
   const exams=Store.get('work_exams',[]);
-  exams.unshift({id:uid(),title,content,date,importance,status:''});
+  exams.unshift({id:uid(),title,violator,content,date,severity,status:''});
   Store.set('work_exams',exams);
   $('#examTitle').value='';
+  $('#examViolator').value='';
   $('#examContent').value='';
-  renderExamList();
-  toast('✅ 已添加');
+  renderExamTab();
+  toast('✅ 已记录，引以为戒');
 }
 
 function renderExamList(){
   const list=$('#examList');if(!list)return;
   const exams=Store.get('work_exams',[]);
   if(!exams.length){
-    list.innerHTML=`<div class="empty"><span class="icon">📋</span>还没有考核记录</div>`;
+    list.innerHTML=`<div class="empty"><span class="icon">📋</span>还没有违规案例记录<br><small>看到别人被扣分/违规的案例，记下来提醒自己</small></div>`;
     return;
   }
 
   // 按日期排序（近期的在前）
   const sorted=exams.slice().sort((a,b)=>b.date.localeCompare(a.date));
-  const today=todayStr();
 
   list.innerHTML=sorted.map(e=>{
-    const days=Math.ceil((new Date(e.date)-new Date(today))/86400000);
-    let dateLabel=e.date;
-    if(days===0) dateLabel='📅 今天';
-    else if(days>0) dateLabel=`📅 ${e.date}（${days}天后）`;
-    else dateLabel=`📅 ${e.date}（${-days}天前）`;
-
-    const impMap={high:'🔴 重要',mid:'🟡 中等',low:'🔵 低'};
-    const statusMap={'':'⬜ 未标记','mastered':'✅ 已掌握','review':'🔄 需复习','unsure':'❓ 没把握'};
+    const sevMap={high:'🔴 严重',mid:'🟡 中等',low:'🔵 轻微'};
+    const sevCls={high:'tag-hot',mid:'tag-mid',low:'tag-low'};
+    const statusMap={'':'⬜ 未标记','mastered':'✅ 已牢记','review':'🔄 需注意','unsure':'⚠️ 重点关注'};
 
     return `
-      <div class="exam-item ${e.importance}">
+      <div class="exam-item ${e.severity}">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px">
           <div style="flex:1">
             <div style="font-size:17px;font-weight:700">${esc(e.title)}</div>
             <div style="margin-top:4px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-              <span class="muted" style="font-size:13px">${dateLabel}</span>
-              <span class="tag ${e.importance==='high'?'tag-hot':e.importance==='mid'?'tag-mid':'tag-low'}">${impMap[e.importance]}</span>
+              <span class="muted" style="font-size:13px">👤 ${esc(e.violator)}</span>
+              <span class="muted" style="font-size:13px">📅 ${e.date}</span>
+              <span class="tag ${sevCls[e.severity]}">${sevMap[e.severity]}</span>
               <span class="muted" style="font-size:13px">${statusMap[e.status]}</span>
             </div>
           </div>
           <button class="btn-icon" onclick="delExam('${e.id}')">🗑</button>
         </div>
-        <div style="font-size:15px;line-height:1.7;white-space:pre-wrap;padding:10px 12px;background:#fff;border-radius:8px;margin-bottom:10px">${esc(e.content)}</div>
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-sm ${e.status==='mastered'?'btn-primary':'btn-ghost'}" onclick="markExam('${e.id}','mastered')">✅ 已掌握</button>
-          <button class="btn btn-sm ${e.status==='review'?'btn-primary':'btn-ghost'}" onclick="markExam('${e.id}','review')">🔄 需复习</button>
-          <button class="btn btn-sm ${e.status==='unsure'?'btn-primary':'btn-ghost'}" onclick="markExam('${e.id}','unsure')">❓ 没把握</button>
+        <div style="font-size:15px;line-height:1.7;white-space:pre-wrap;padding:12px 14px;background:#FFFBEB;border-radius:8px;margin-bottom:10px;border-left:3px solid ${e.severity==='high'?'#EF4444':e.severity==='mid'?'#F59E0B':'#6366F1'}">${esc(e.content)}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn btn-sm ${e.status==='mastered'?'btn-primary':'btn-ghost'}" onclick="markExam('${e.id}','mastered')">✅ 已牢记</button>
+          <button class="btn btn-sm ${e.status==='review'?'btn-primary':'btn-ghost'}" onclick="markExam('${e.id}','review')">🔄 需注意</button>
+          <button class="btn btn-sm ${e.status==='unsure'?'btn-primary':'btn-ghost'}" onclick="markExam('${e.id}','unsure')">⚠️ 重点关注</button>
         </div>
       </div>
     `;
@@ -3018,7 +3045,7 @@ function markExam(id,status){
 }
 
 function delExam(id){
-  if(!confirm('删除这条考核记录？'))return;
+  if(!confirm('删除这条案例？'))return;
   let e=Store.get('work_exams',[]);
   e=e.filter(x=>x.id!==id);
   Store.set('work_exams',e);
